@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+	<meta charset="utf-8"/>
+	<meta name="author" content="Vitalis Wiens, Steffen Lohmann"/>
+	<meta name="keywords" content="graceful and more"/>
+	<meta name="description" content="GRACeFUL - Web-based Node-Link-Visualization Tool"/>
+	<meta name="robots" content="noindex,nofollow"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=1">
+	<meta name="apple-mobile-web-app-capable" content="no">
+	<link rel="stylesheet" type="text/css" href="css/graceful.css"/>
+	<link rel="stylesheet" type="text/css" href="css/graceful.app.css"/>
+	<link rel="icon" href="favicon.ico" type="image/x-icon"/>
+	<title>GRACeFUL - Demo</title>
+</head>
+<body>
+<main>
+	<section id="canvasArea">
+
+		<div id="logo">
+			<h2>GRACeFUL <br/><br/></h2>
+			<div id="framesText">FPS: </div>
+			<div id="numForceNodes" >#forceNodes : </div>
+		</div>
+
+
+		<div id="loading-info">
+			<div id="loading-error" class="hidden">
+				<div id="error-info"></div>
+				<div id="error-description-button" class="hidden">Show error details</div>
+				<div id="error-description-container" class="hidden">
+					<pre id="error-description"></pre>
+				</div>
+			</div>
+			<div id="loading-progress" class="hidden">
+				<span>Loading ontology... </span>
+				<div class="spin">&#8635;</div><br>
+			</div>
+		</div>
+		<div id="graph"></div>
+	</section >
+	<aside id="controlsArea">
+		<section id="controlDetails">
+
+			<h2 id="metaInfo">Meta Info</h2>
+			<h5>Name: <span id="ontoName"></span></h5>
+			<h5>Comment: <span id="ontoComment"></span></h5>
+			<h5>Iri: <span id="ontoIRI"></span></h5>
+			<h5>Version: <span id="version"></span></h5>
+			<h5>Author(s): <span id="authors"></span></h5>
+			<h5>Nodes: <span id="ontoNodes"></span></h5>
+			<h5>Edges: <span id="ontoEdges"></span></h5>
+			<h1 id="controlTitle">Controls</h1>
+			<!-- ADD ELEMENTS -->
+			<h3 class="accordion-trigger accordion-trigger-active">Add</h3>
+			<div class="accordion-container scrollable">
+				<a id="add_roundNode" href="#">Round</a>
+				<a id="add_rectNode" href="#">Rect</a>
+
+			</div>
+			<!--EDIT A SINGLE ELEMENT VALUES-->
+			<h3 class="accordion-trigger">Edit</h3>
+			<div class="accordion-container scrollable">
+
+			</div>
+			<!--TOOLS, eg, multi selection or path connection generator-->
+			<h3 class="accordion-trigger">Tools</h3>
+			<div class="accordion-container scrollable">
+				<p id="muh">meh</p>
+			</div>
+			<!--ONTOLOGY RELATED THINGS-->
+				<!--e.g: LOAD JSON-->
+				<!--    Save as JSON-->
+				<!--    Save as SVG-->
+				<!--    UPDATE WITH DATABASE-->
+				<!--    REMOVE ALL LINKS-->
+				<!--    REMOVE ALL NODES-->
+			<h3 class="accordion-trigger">Ontology</h3>
+			<div class="accordion-container scrollable">
+				<a href="#">Clear</a>
+			</div>
+
+		</section>
+	</aside>
+	<nav id="optionsArea">
+
+	</nav>
+</main>
+<script src="js/d3.min.js"></script>
+<script src="js/graceful.js"></script>
+<script src="js/graceful.app.js"></script>
+<script>window.onload = graceful.app().initialize;</script>
+</body>
+</html>
