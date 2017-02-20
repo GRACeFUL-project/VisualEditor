@@ -561,3 +561,28 @@ ul#optionsMenu > li:hover .aboutMenu {
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
+
+
+/*INPUT FORM */
+.input-div-label {
+	display: inline-block;
+	line-height: normal;
+}
+.inputPath [type="file"]{
+	box-sizing: border-box;
+	height: 20px;
+	width: 74%;
+	border: 1px solid #34495E;
+	cursor: pointer;
+	position: absolute;
+}
+.inputUpLoader {
+	cursor: pointer;
+	float: right;
+	height: 20px;
+	padding: 0;
+	width: 25%;
+	border: 1px solid #34495E;
+	background-color: #ecf0f1;
+
+}

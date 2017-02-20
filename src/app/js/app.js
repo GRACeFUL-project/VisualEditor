@@ -10,10 +10,20 @@ module.exports = function () {
         buttonsMenu= require("./menu/buttonsMenu")(graph);
 
 
+		var logo=require("./logo")();
+
+		var metaInfo=require("./metaInfo")(graph);
+
+
+
 	app.initialize = function () {
 		buttonsMenu.setup();
 		sidebar.setup();
+		logo.setup();
+		metaInfo.setup();
 		options.graphContainerSelector(GRAPH_SELECTOR);
+		options.logo(logo);
+		options.metaInfo(metaInfo);
 		d3.select(window).on("resize", adjustSize);
 		graph.start();
 		adjustSize();

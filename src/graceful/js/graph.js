@@ -1,6 +1,7 @@
 var _ = require("lodash/core");
 var nodeElement= require("./elements/nodeElement")();
 
+
 module.exports = function (graphContainerSelector) {
 	var graph = {},
 		options = require("./options")(),
@@ -24,8 +25,34 @@ module.exports = function (graphContainerSelector) {
 // NODE CONTAINERS
 		instance_container=[],
 		cI=0,
+		inputJsonText,
+        inputParser= require("./inputParser")(graph),
+		classNodes,
 		zoom;
 
+
+	graph.setJSONInputText=function(txt){
+		inputJsonText=txt;
+
+		classNodes=inputParser.parse(inputJsonText);
+
+
+        redrawContent();
+
+	};
+
+
+    graph.createNewInstanceNode=function(nodeType){
+        var node=new nodeElement(graph);
+        node.id(nodeType.id()+cI);
+        node.label("Instance");
+        node.imageURL(nodeType.imageURL());
+        node.elementType("INSTANCE");
+        cI++;
+        instance_container.push(node);
+        updateForceNodes();
+        redrawContent();
+	};
 
 	graph.addRoundNode=function(){
 	//	console.log("requesting a new  ROUND node");
@@ -42,8 +69,8 @@ module.exports = function (graphContainerSelector) {
 	function updateForceNodes(){
 		force.nodes(instance_container);
 
-
-        d3.select("#numForceNodes").node().innerHTML="#forceNodes:"+force.nodes().length;
+		if (options.logo().drawForceNodesNumber()===true)
+        	d3.select("#numForceNodes").node().innerHTML="#forceNodes:"+force.nodes().length;
 	}
 
 	function recalculatePositions() {
@@ -56,7 +83,8 @@ module.exports = function (graphContainerSelector) {
         now = Date.now();
         var diff=now-then;
         var fps=(1000 / (diff)).toFixed(2);
-        d3.select("#framesText").node().innerHTML="FPS: "+fps;
+        if (options.logo().drawFps()===true)
+        	d3.select("#framesText").node().innerHTML="FPS: "+fps;
         then=Date.now();
     }
 
@@ -136,6 +164,26 @@ module.exports = function (graphContainerSelector) {
 		fixedNodeContainer=graphContainer.append("g").classed("nodeContainer", true);
 
         // Draw nodes
+        // add classNodes to Fixed container;
+        if (classNodes.length>0) {
+            var fixed = fixedNodeContainer.selectAll(".node")
+                .data(classNodes).enter()
+                .append("g")
+                .classed("node", true)
+                .attr("id", function (d) {
+                    return d.id();
+                });
+            //.call(dragBehaviour);
+			var index=0;
+            fixed.each(function (node) {
+                node.x = 60;
+                node.y = 200 + index * 110;
+                node.drawNodeElement(d3.select(this));
+                node.updateRendering();
+                index++;
+            });
+        }
+
 
 		if (force.nodes().length===0){
 			console.log("Nothing to render");
@@ -154,14 +202,15 @@ module.exports = function (graphContainerSelector) {
             node.drawNodeElement(d3.select(this));
         });
         force.start();
+        refreshGraphStyle();
 	}
 	/**
 	 * Applies all options that don't change the graph data.
 	 */
 	function refreshGraphStyle() {
 		 zoom = zoom.scaleExtent([options.minMagnification(), options.maxMagnification()]);
-		 if (graphContainer) {
-		 	zoom.event(graphContainer);
+		 if (nodeContainer) {
+		 	zoom.event(nodeContainer);
 		 }
 
 		 force.size([options.width(), options.height()]);// add
@@ -199,7 +248,7 @@ module.exports = function (graphContainerSelector) {
 	};
 
     function zoomed() {
-        graphContainer.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+        nodeContainer.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
         zoomFactor = d3.event.scale;
         graphTranslation = d3.event.translate;
     }

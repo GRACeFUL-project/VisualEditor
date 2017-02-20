@@ -5,6 +5,8 @@ module.exports = function () {
 		width = 800,
 		minMagnification = 0.1,
 		maxMagnification = 4,
+		logoItem,
+        metaInfoItem,
 		sidebar;
 
 	options.sidebar= function(s){
@@ -12,6 +14,19 @@ module.exports = function () {
 		sidebar = s;
 		return options;
 
+	};
+
+	options.logo=function(l){
+        if (!arguments.length) return logoItem;
+        logoItem=l;
+        return options;
+
+    };
+
+    options.metaInfo=function(mi){
+        if (!arguments.length) return metaInfoItem;
+        metaInfoItem=mi;
+        return options;
 	};
 
 	options.graphContainerSelector = function (p) {
