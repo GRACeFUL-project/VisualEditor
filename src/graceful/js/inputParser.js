@@ -1,8 +1,12 @@
-var nodeElement= require("./elements/nodeElement")();
+
 
 module.exports = function (graph) {
     var parser={};
     var inputClasses=[];
+    var inputPorts=[];
+    var nodeElement= require("./elements/nodeElement")();
+    var portElement= require("./elements/portElement")();
+
     parser.parse=function(inputTxt){
         //1] read the txt as JSON;
         var jObj=JSON.parse(inputTxt);
@@ -26,6 +30,61 @@ module.exports = function (graph) {
             node.label(element.className);
             inputClasses.push(node);
         }
+
+        console.log("Creating POrts");
+        // parse the different ports;
+        var ports=jObj.ports;
+        for (i=0;i<ports.length;i++){
+            element=ports[i];
+             console.log(i+" Port Name :"+element.id);
+            var port=new portElement(graph);
+            port.id(element.id);
+            port.imageURL(element.imgURL);
+            port.elementType(element.type);
+            port.label(element.name);
+            inputPorts.push(port);
+        }
+        // port assignment to classes;
+        // TODO: craete maping for ids to objects
+
+        console.log("Trying assignment");
+        var assignment=jObj.classPorts;
+        for (i=0;i<assignment.length;i++) {
+            element = assignment[i];
+            var classId = element.instanceId;
+            var portIds = element.portIds;
+
+            console.log("processing "+classId);
+            console.log("With PortIds "+portIds);
+            // get the specific node element
+            var nodeThing;
+
+            for (var n=0;n<inputClasses.length;n++){
+                if (inputClasses[i].id()===classId) {
+                    nodeThing = inputClasses[i];
+                    console.log("found nodeElement Id"+ i);
+                }
+            }
+
+            // get port object
+            for (var j=0;j<portIds.length;j++){
+                var portElementId=portIds[j];
+                var portThing;
+                for (var p=0;p<inputPorts.length;p++){
+                    if (inputPorts[p].id()===portElementId) {
+                        portThing = inputPorts[p];
+                        console.log("found a port thing "+ p);
+                    }
+                }
+                console.log("Elements : "+portThing + " Nodes "+nodeThing);
+                if (portThing && nodeThing) {
+                    console.log("adding port obj");
+                    nodeThing.addPortObject(portThing);
+                }
+            }
+        }
+
+
 
         return inputClasses;
     };

@@ -44,9 +44,9 @@ module.exports = function (graphContainerSelector) {
 
     graph.createNewInstanceNode=function(nodeType){
         var node=new nodeElement(graph);
-        node.id(nodeType.id()+cI);
-        node.label("Instance");
-        node.imageURL(nodeType.imageURL());
+        var classId=nodeType.id();
+        node.id(classId+"_"+cI);
+        node.deepCopy(nodeType);
         node.elementType("INSTANCE");
         cI++;
         instance_container.push(node);

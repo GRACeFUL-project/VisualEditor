@@ -1,6 +1,8 @@
 var languageTools = require("../util/languageTools")();
 var nodeDrawTools = require("../drawTools/nodeDrawTools")();
+var portElement= require("./portElement")();
 
+var DEF=require("./defines")();
 
 
 module.exports = function () {
@@ -9,15 +11,18 @@ module.exports = function () {
         var that=this;
 
         // rendering flags and variables
-        var radius=50,
+        var radius=40,
             imageUrl,
             elementType,
             RENDER_AS_IMAGE=false,
             hoverPrimitive=null,
+            nodeRoot,
+            portsRoot,
             svgRoot;
 
 
 
+        var portObjects=[];
 
 
         // rendering elements
@@ -50,18 +55,56 @@ module.exports = function () {
         };
 
 
+        this.addPortObject=function (portObj){
+          // need to copy the port object
+            console.log("Make a copy of this port "+portObj.label());
+            var cp_obj=new portElement(graph);
+            cp_obj.deepCopy(portObj);
+            portObjects.push(cp_obj);
+            console.log("Adding Port"+cp_obj.labelForCurrentLanguage()+" to node "+that.labelForCurrentLanguage());
+
+            // set the svgRoot and the new id for the port
+
+            var portId=cp_obj.id();
+            cp_obj.id(that.id()+"_"+portId);
+            cp_obj.svgRoot(portsRoot);
+        };
+
 // rendering functions
         this.updateRendering=function(){
             // only update me
             svgRoot.attr("transform", "translate(" + that.x + "," + that.y + ")");
         };
+
         this.svgRoot=function(root){
             if (!arguments.length) return svgRoot;
             svgRoot = root;
             return this;
         };
+
+        this.svgNodeRoot=function(root){
+            if (!arguments.length) return nodeRoot;
+            nodeRoot= root;
+            return this;
+        };
+
+        this.svgPortsRoot=function(root){
+            if (!arguments.length) return portsRoot;
+            portsRoot = root;
+            return this;
+        };
+
+
         this.renderAsImage=function(){
             return RENDER_AS_IMAGE;
+        };
+
+
+        this.updatePortsSvgRoot=function(){
+            for (var i=0;i<portObjects.length;i++) {
+                var tempRoot=portsRoot.append('g');
+                portObjects[i].svgRoot(tempRoot);
+            }
         };
 
         this.drawNodeElement=function(svgRoot){
@@ -69,16 +112,48 @@ module.exports = function () {
             // craete draw function class;
 
             that.svgRoot(svgRoot);
+            nodeRoot=svgRoot.append("g");
+            portsRoot=svgRoot.append("g");
+
+            that.updatePortsSvgRoot();
+
 
             nodeElement=nodeDrawTools.drawNodeElement(that);
             if (that.elementType()==="INSTANCE")
                 textElement=nodeDrawTools.addTextElement(that);
             // add connections to this object
             that.addConnectionsToNodeElement(nodeElement);
-            hoverPrimitive=svgRoot.append("circle")
+            hoverPrimitive=nodeRoot.append("circle")
                 .classed("hoverImage", true)
                 .attr("r", radius);
             hoverPrimitive.classed("hidden",true);
+
+            that.drawPortElements();
+
+        };
+
+
+        this.drawPortElements=function(){
+            DEF.CL("want to draw ports info "+portObjects.length);
+
+            for (var i=0;i<portObjects.length;i++){
+                var xOffset=that.radius();
+                var yOffset=i*that.radius();
+                // normalize the vector
+                var len=Math.sqrt((xOffset*xOffset)+(yOffset*yOffset));
+                var nX=xOffset/len;
+                var nY=yOffset/len;
+                xOffset=nX*that.radius();
+                yOffset=nY*that.radius();
+
+                portObjects[i].x=xOffset;
+                portObjects[i].y=yOffset;
+                DEF.CL("Port "+i+ "POS:"+xOffset+" "+yOffset );
+                nodeDrawTools.drawPortElement(that,portObjects[i]);
+                portObjects[i].addConnectionsToNodeElement();
+                portObjects[i].updateRendering();
+
+            }
 
         };
 
@@ -92,10 +167,10 @@ module.exports = function () {
 
 
             if(RENDER_AS_IMAGE===true){
-                svgRoot.on("mouseover", function () {onImageHover() ;});
-                svgRoot.on("mouseout" , function () {outImageHover();});
-                svgRoot.append("title").text(that.labelForCurrentLanguage());
-                svgRoot.on("click", onClicked);
+                nodeRoot.on("mouseover", function () {onImageHover() ;});
+                nodeRoot.on("mouseout" , function () {outImageHover();});
+                nodeRoot.append("title").text(that.labelForCurrentLanguage());
+                nodeRoot.on("click", onClicked);
             }else {
                 el.on("mouseover", onMouseOver)
                     .on("mouseout", onMouseOut)
@@ -129,7 +204,7 @@ module.exports = function () {
             that.mouseEntered(true);
             hoverPrimitive.classed("hidden",false);
 
-        };
+        }
 
         function outImageHover(){
             that.mouseEntered(false);
@@ -155,6 +230,35 @@ module.exports = function () {
         };
 
 
+// COPY CONSTRUCTORS
+
+        this.getPortObjs=function(){
+            return portObjects;
+        };
+
+        this.copyPorts=function(ports){
+          portObjects=[];
+          DEF.CL("copying ports");
+          for (var i=0;i<ports.length;i++){
+              var portThing=new portElement(graph);
+
+              portThing.deepCopy(ports[i]);
+              var thingId=portThing.id();
+              portThing.id(thingId+"_"+that.id());
+              portObjects.push(portThing);
+              portThing.allowHover(true);
+          }
+        };
+
+
+        this.deepCopy=function(other){
+            this.imageURL(other.imageURL());
+            this.radius(other.radius());
+            this.copyPorts(other.getPortObjs());
+            this.label(other.label()+" "+this.id());
+
+
+        };
 // BASE CLASS DEFINITIONS
         this.focused = function (p) {
             if (!arguments.length) return focused;

@@ -1,8 +1,15 @@
+
+var DEF=require("../elements/defines")();
+
+function CL(text) {
+    console.log(text);
+}
+
 module.exports = (function () {
     var tools = {};
 
     tools.drawNodeElement=function(node){
-        var root=node.svgRoot();
+        var root=node.svgNodeRoot();
         var nodeEl=root.append("circle")
             .classed("class", true)
             .attr("r", node.radius());
@@ -30,6 +37,32 @@ module.exports = (function () {
         return textElement;
 
     };
+
+    tools.drawPortElement=function (parentNode,portObj){
+        var portRoot=portObj.svgRoot();
+
+        // based on portObjType (rect, round) add the thing to it;
+        // todo: currently allowing only round images, and round ports, extend that.
+        CL("drawing the port node"+portObj.renderType());
+
+
+        if (portObj.renderType()===DEF.ROUND){
+            CL("Adding Circle");
+             portRoot.append("circle")
+                .attr("r", portObj.radius());
+            CL("Adding Image"+ portObj.imageURL());
+            if (portObj.renderAsImage()===true) {
+                portRoot.append("image")
+                    .attr('x', -portObj.radius())
+                    .attr('y', -portObj.radius())
+                    .attr('width', 2 * portObj.radius())
+                    .attr('height', 2 * portObj.radius())
+                    .attr("xlink:href", portObj.imageURL());
+            }
+        }
+
+    };
+
 
     return function () {
         // Encapsulate into function to maintain default.module.path()
