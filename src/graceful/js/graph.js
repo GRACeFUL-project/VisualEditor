@@ -7,11 +7,13 @@ module.exports = function (graphContainerSelector) {
 		options = require("./options")(),
 		language = "default",
 		paused = false,
+        masterContainer,
 		graphContainer,
 		nodeContainer,
 
 	// Visual elements
 		nodeElements,
+		testObj,
         fixedNodeContainer,
 
 	// Graph behaviour
@@ -135,13 +137,13 @@ module.exports = function (graphContainerSelector) {
 	function redrawGraph() {
 		remove();
 
-		graphContainer = d3.selectAll(options.graphContainerSelector())
+		masterContainer = d3.selectAll(options.graphContainerSelector())
 			.append("svg")
 			.classed("vowlGraph", true)
 			.attr("width", options.width())
 			.attr("height", options.height())
-			.call(zoom)
-			.append("g");
+			.call(zoom);
+        graphContainer=masterContainer.append("g");
 
 	}
 
@@ -266,8 +268,10 @@ module.exports = function (graphContainerSelector) {
             .on("dragstart", function (d) {
                 d3.event.sourceEvent.stopPropagation(); // Prevent panning
                 d.locked(true);
+                console.log("NODE DRAG START");
             })
             .on("drag", function (d) {
+                console.log("NODE DRAG ");
                 d.px = d3.event.x;
                 d.py = d3.event.y;
                 force.resume();
@@ -279,6 +283,7 @@ module.exports = function (graphContainerSelector) {
                 }
             })
             .on("dragend", function (d) {
+                console.log("NODE DRAG END");
                 d.locked(false);
             });
         // Apply the zooming factor.
@@ -305,6 +310,61 @@ module.exports = function (graphContainerSelector) {
         zoom.translate([0, 0])
             .scale(1);
     };
+
+    graph.followObject=function(obj){
+    	// obj is here a port draging element.
+		testObj=obj;
+		// get svg root object
+
+        masterContainer.on("mousemove",graph.getMousePositionInGraph);
+		//graph.getMousePositionInGraph();
+   	};
+
+    // The magic function - converts node positions into positions on screen.
+        function getScreenCoords(x, y, translate, scale) {
+        var xn=(x-translate[0])/scale;
+        var yn=(y-translate[1])/scale;
+
+        return {x: xn, y: yn};
+    }
+
+
+
+        graph.getMousePositionInGraph=function(){
+
+        	console.log("Client ScreenPos"+ d3.event.clientX +  " "+d3.event.clientY);
+        	//screepos to graphpos;
+			var grPos=getScreenCoords(d3.event.clientX,d3.event.clientY,graphTranslation,zoomFactor);
+            console.log("graph  ScreenPos"+ grPos.x+" "+grPos.y);
+
+            var parPos=testObj.getParentPos();
+            console.log("parents Pos"+parPos);
+			console.log("rendering element "+testObj.getPortDragingObj());
+
+			testObj.getPortDragingObj().attr("cx",grPos.x-parPos.x-testObj.x)
+				                       .attr("cy",grPos.y-parPos.y-testObj.y);
+
+
+
+        //
+        // var offsetX=parseInt(d3.event.movementX);
+        // var offsetY=parseInt(d3.event.movementY);
+        //
+        // var posX=parseInt(tempArrowElement.attr("cx"));
+        // var posY=parseInt(tempArrowElement.attr("cy"));
+        //
+        // var newX=posX+offsetX;
+        // var newY=posY+offsetY;
+        //
+        // DEF.CL("POSOLD:("+posX+" , "+posY+ ")  -> NEW : ("+newX+" , "+newY+")");
+        //
+        // tempArrowElement.attr("cx",newX);
+        // tempArrowElement.attr("cy",newY);
+
+
+
+	};
+
 
 	return graph;
 };

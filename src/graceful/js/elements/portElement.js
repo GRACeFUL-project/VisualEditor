@@ -15,6 +15,9 @@ module.exports = function () {
             RENDER_TYPE=DEF.ROUND,
             HOVERING_ENABLED=false,
             hoverPrimitive=null,
+            parentNodeElement,
+            portDrag=false,
+            tempArrowElement=null,
             svgRoot;
 
         // rendering elements
@@ -31,6 +34,16 @@ module.exports = function () {
             svgRoot.attr("transform", "translate(" + that.x + "," + that.y + ")");
         };
 
+        this.setParentNodeElement=function(parent){
+            parentNodeElement=parent;
+        };
+
+        this.getParentPos=function(){
+            if (parentNodeElement){
+                return {x: parentNodeElement.x, y: parentNodeElement.y};
+            }else return {x: 0, y: 0};
+
+        };
         this.imageURL=function(url){
             if (!arguments.length) return imageUrl;
             imageUrl=url;
@@ -86,11 +99,76 @@ module.exports = function () {
             svgRoot.on("mouseover", function () {onImageHover() ;});
             svgRoot.on("mouseout" , function () {outImageHover();});
             svgRoot.on("click", onClicked);
+
+            //dragover drop dragstart
+
+            svgRoot.on("mousedown",function(){ dragStart() });
+          //  svgRoot.on("mouseup", function(){ dragOver()  });
+          //  svgRoot.on("mousemove",     function(){ draging()  });
+
+
+
+
+
         };
 
 
+        this.getPortDragingObj=function(){
+            return tempArrowElement;
+        };
+
+        function dragStart(){
+            d3.event.stopImmediatePropagation();
+            d3.event.preventDefault();
+            portDrag=true;
+            DEF.CL("Prevented default? "+ d3.event.defaultPrevented);
+
+            // create the arrow;
+
+
+            tempArrowElement=svgRoot.append("circle")
+                .attr("style","fill : #f0f;")
+                            .attr("r", 20)
+                            .attr("cx", 0)
+                            .attr("cy", 0);
+
+            graph.followObject(that);
+            // tempArrowElement= svgRoot.append("line")
+            //     .attr("x1", 0)
+            //     .attr("y1", 0 )
+            //     .attr("x2", 50)
+            //     .attr("y2", 50)
+            //     .attr('style', "stroke: " + "#f00" + ";stroke-width: " + "2" + ";");
+
+            tempArrowElement.on("mouseup",     function(){ draging()  });
+
+
+        }
+        function dragOver(){
+            portDrag =false;
+            DEF.CL("calling dragOver");
+            tempArrowElement.remove();
+
+        }
+        function draging(){
+            if (portDrag===false)return;
+
+            // talk with the graph to detect the actual position in the screen depending on graph;
+            graph.followObject(tempArrowElement);
+
+
+
+            // tempArrowElement.attr("cx",  )
+            //     .attr("cy", d3.event.offsetY )
+
+
+
+        }
+
+
+
         this.setHoverHighlighting = function (enable) {
-            console.log("Enable Hover"+ enable);
+          //  console.log("Enable Hover"+ enable);
             nodeElement.classed("hovered", enable);
         };
 
@@ -109,18 +187,18 @@ module.exports = function () {
 
 
         function onClicked() {
-            console.log("I was Clicked PORT: " + that.labelForCurrentLanguage());
+          //  console.log("I was Clicked PORT: " + that.labelForCurrentLanguage());
             if (d3.event.defaultPrevented) {
                 return;
             }
         }
 
         function onImageHover(){
-            DEF.CL("hoveredPort? "+that.mouseEntered());
+           // DEF.CL("hoveredPort? "+that.mouseEntered());
             if (that.mouseEntered()) {
                return;
             }
-            console.log("hoverred over PORT"+that.labelForCurrentLanguage());
+          //  console.log("hoverred over PORT"+that.labelForCurrentLanguage());
             that.mouseEntered(true);
             hoverPrimitive.classed("hidden",false);
         }
@@ -131,7 +209,7 @@ module.exports = function () {
         }
 
         function onMouseOver() {
-            DEF.CL("hoveredPort MOUSE OVEr? "+that.mouseEntered());
+         //   DEF.CL("hoveredPort MOUSE OVEr? "+that.mouseEntered());
             if (that.mouseEntered()) {
                 return;
             }
@@ -145,7 +223,7 @@ module.exports = function () {
         }
 
         this.setHoverHighlighting = function (enable) {
-            console.log("Enable Hover"+ enable);
+         //   console.log("Enable Hover"+ enable);
             //nodeElement.classed("hovered", enable);
         };
 

@@ -134,7 +134,7 @@ module.exports = function () {
 
 
         this.drawPortElements=function(){
-            DEF.CL("want to draw ports info "+portObjects.length);
+          //  DEF.CL("want to draw ports info "+portObjects.length);
 
             for (var i=0;i<portObjects.length;i++){
                 var xOffset=that.radius();
@@ -148,7 +148,7 @@ module.exports = function () {
 
                 portObjects[i].x=xOffset;
                 portObjects[i].y=yOffset;
-                DEF.CL("Port "+i+ "POS:"+xOffset+" "+yOffset );
+           //    DEF.CL("Port "+i+ "POS:"+xOffset+" "+yOffset );
                 nodeDrawTools.drawPortElement(that,portObjects[i]);
                 portObjects[i].addConnectionsToNodeElement();
                 portObjects[i].updateRendering();
@@ -181,7 +181,7 @@ module.exports = function () {
 
 
         function onClicked() {
-            console.log("I was Clicked: " + that.labelForCurrentLanguage());
+          //  console.log("I was Clicked: " + that.labelForCurrentLanguage());
             if (d3.event.defaultPrevented) {
                 return;
             }
@@ -200,7 +200,7 @@ module.exports = function () {
                 //	titleElement.classed("hidden",false);
                 return;
             }
-            console.log("hoverred over image"+that.labelForCurrentLanguage());
+         //   console.log("hoverred over image"+that.labelForCurrentLanguage());
             that.mouseEntered(true);
             hoverPrimitive.classed("hidden",false);
 
@@ -225,7 +225,7 @@ module.exports = function () {
         }
 
         this.setHoverHighlighting = function (enable) {
-            console.log("Enable Hover"+ enable);
+        //    console.log("Enable Hover"+ enable);
             nodeElement.classed("hovered", enable);
         };
 
@@ -247,6 +247,7 @@ module.exports = function () {
               portThing.id(thingId+"_"+that.id());
               portObjects.push(portThing);
               portThing.allowHover(true);
+              portThing.setParentNodeElement(that);
           }
         };
 
