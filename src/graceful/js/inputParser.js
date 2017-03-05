@@ -1,5 +1,25 @@
 
 
+/* NODES
+
+
+ {  "id"         : "nodeId0",
+ "name"       : "pump",
+ "imagURL"    : "./data/img/pump.png",
+ "hoverText"  : "this is a pump",
+ "parameters" : [ {"name" : "capacity","type" : "Float",} ]
+ },
+
+ "interfaces" :[
+ {  "id"         : "interfaceId0",
+ "name"       : "inflow",
+ "type"       : "Flow",
+ "hoverText"  : "Description",
+ "imagURL"    : "./data/interfaces/inflow.png",
+ "ConRestrict": []
+ },
+* */
+
 module.exports = function (graph) {
     var parser={};
     var inputClasses=[];
@@ -19,26 +39,31 @@ module.exports = function (graph) {
         graph.options().metaInfo().comment().innerHTML="Comment "+comment;
 
 
-        var inp=jObj.classes;
+        var inp=jObj.nodes;
         for (var i=0;i<inp.length;i++){
             var element=inp[i];
             console.log(i+" name "+element.id);
             var node=new nodeElement(graph);
             node.id(element.id);
             node.imageURL(element.imgURL);
-            node.elementType(element.type);
-            node.label(element.className);
+            node.elementType("CLASS_NODE"); // setting the type of the node to be a class node
+            node.label(element.name);
+            node.hoverText(element.hoverText);
+			node.parametersAsString(element.parameters);
             inputClasses.push(node);
         }
 
-        console.log("Creating POrts");
+        console.log("Creating interfaces");
         // parse the different ports;
-        var ports=jObj.ports;
+        var ports=jObj.interfaces;
+
         for (i=0;i<ports.length;i++){
             element=ports[i];
-             console.log(i+" Port Name :"+element.id);
             var port=new portElement(graph);
             port.id(element.id);
+            port.name(element.name);
+			port.portType(element.type);
+			port.hoverText(element.hoverText);
             port.imageURL(element.imgURL);
             port.elementType(element.type);
             port.label(element.name);
@@ -48,11 +73,11 @@ module.exports = function (graph) {
         // TODO: craete maping for ids to objects
 
         console.log("Trying assignment");
-        var assignment=jObj.classPorts;
+        var assignment=jObj.interfaceAssignment;
         for (i=0;i<assignment.length;i++) {
             element = assignment[i];
-            var classId = element.instanceId;
-            var portIds = element.portIds;
+            var classId = element.NodeId;
+            var portIds = element.ports;
 
             console.log("processing "+classId);
             console.log("With PortIds "+portIds);

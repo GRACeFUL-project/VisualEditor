@@ -35,14 +35,27 @@ module.exports = function () {
         var id,
             focused,
             mouseEntered,
+            hoverText,
             label;
         // force node behaviour
         var locked=false,
             frozen=false,
             pinned=false,
             charge=-500;
+        // parameters
+        var parametersAsString;
 
 
+        this.parametersAsString=function(text){
+			if (!arguments.length) return parametersAsString;
+			parametersAsString=text;
+			// todo : parse the parameters and add a value for each parameter
+            // so the user can change it.
+        };
+        this.hoverText=function(text){
+			if (!arguments.length) return hoverText;
+            hoverText=text;
+        };
 
         this.imageURL=function(url){
             if (!arguments.length) return imageUrl;
@@ -169,7 +182,7 @@ module.exports = function () {
             if(RENDER_AS_IMAGE===true){
                 nodeRoot.on("mouseover", function () {onImageHover() ;});
                 nodeRoot.on("mouseout" , function () {outImageHover();});
-                nodeRoot.append("title").text(that.labelForCurrentLanguage());
+                nodeRoot.append("title").text(that.hoverText());
                 nodeRoot.on("click", onClicked);
             }else {
                 el.on("mouseover", onMouseOver)

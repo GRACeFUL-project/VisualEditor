@@ -25,9 +25,26 @@ module.exports = function () {
 
         // node behaviour
         var id,
+            name,
+            hoverText,
+            portType,
             focused,
             mouseEntered,
             label;
+
+        this.name=function(n){
+			if (!arguments.length) return name;
+			name=n;
+        };
+		this.portType=function(n){
+			if (!arguments.length) return portType;
+			portType=n;
+		};
+
+        this.hoverText=function(text){
+			if (!arguments.length) return hoverText;
+			hoverText=text;
+        };
 
         this.updateRendering=function(){
             // only update me
@@ -45,6 +62,7 @@ module.exports = function () {
 
         };
         this.imageURL=function(url){
+            console.log("Setting image to URL"+url);
             if (!arguments.length) return imageUrl;
             imageUrl=url;
             RENDER_AS_IMAGE=true;
