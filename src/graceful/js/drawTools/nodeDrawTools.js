@@ -49,6 +49,7 @@ module.exports = (function () {
         if (portObj.renderType()===DEF.ROUND){
 			console.log("Adding Circle");
              portRoot.append("circle")
+                 .attr("style","fill:#fff;")
                 .attr("r", portObj.radius());
             console.log("Adding Image"+ portObj.imageURL());
             if (portObj.renderAsImage()===true) {

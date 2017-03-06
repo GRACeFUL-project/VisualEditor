@@ -149,18 +149,12 @@ module.exports = function () {
         this.drawPortElements=function(){
           //  DEF.CL("want to draw ports info "+portObjects.length);
 
-            for (var i=0;i<portObjects.length;i++){
-                var xOffset=that.radius();
-                var yOffset=i*that.radius();
-                // normalize the vector
-                var len=Math.sqrt((xOffset*xOffset)+(yOffset*yOffset));
-                var nX=xOffset/len;
-                var nY=yOffset/len;
-                xOffset=nX*that.radius();
-                yOffset=nY*that.radius();
+            var portPositions=getPrecomputedPortPositions();
 
-                portObjects[i].x=xOffset;
-                portObjects[i].y=yOffset;
+            for (var i=0;i<portObjects.length;i++){
+
+                portObjects[i].x=that.radius()*portPositions[i].x;
+                portObjects[i].y=that.radius()*portPositions[i].y;
            //    DEF.CL("Port "+i+ "POS:"+xOffset+" "+yOffset );
                 nodeDrawTools.drawPortElement(that,portObjects[i]);
                 portObjects[i].addConnectionsToNodeElement();
@@ -175,6 +169,38 @@ module.exports = function () {
             radius = r;
             return this;
         };
+
+
+        function getPrecomputedPortPositions(){
+            var angularValues=[];
+            if (portObjects.length===1){
+                angularValues.push(0);
+            }
+            if (portObjects.length===2){
+                angularValues.push(45);
+                angularValues.push(-45);
+            }
+            if (portObjects.length===3){
+                angularValues.push(45);
+                angularValues.push(0);
+                angularValues.push(-45);
+            }
+            var vectors=[];
+            for (var i=0;i<angularValues.length;i++){
+                vectors.push(angleToNormedVec(angularValues[i]));
+            }
+            return vectors;
+        }
+
+
+        function angleToNormedVec(angle){
+            // angle in degree;
+            var xn=Math.cos(angle);
+            var yn=Math.sin(angle);
+            return {x: xn, y: yn}
+
+
+        }
 
         this.addConnectionsToNodeElement=function(el){
 

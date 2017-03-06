@@ -11,6 +11,9 @@ module.exports = function (graphContainerSelector) {
 		graphContainer,
 		nodeContainer,
 
+	// draging variables
+		followNodeElement=false,
+
 	// Visual elements
 		nodeElements,
 		testObj,
@@ -315,11 +318,23 @@ module.exports = function (graphContainerSelector) {
     	// obj is here a port draging element.
 		testObj=obj;
 		// get svg root object
+        followNodeElement=true;
+        masterContainer.on("mouseup",graph.stopFollow);
 
         masterContainer.on("mousemove",graph.getMousePositionInGraph);
 		//graph.getMousePositionInGraph();
    	};
 
+    graph.stopFollow=function () {
+    	if (followNodeElement) {
+            console.log("Stop follow, and remove node" + followNodeElement);
+            masterContainer.on("mousemove", function () {
+            });
+            testObj.removeTempArrow();
+            followNodeElement = false;
+        }
+
+    };
     // The magic function - converts node positions into positions on screen.
         function getScreenCoords(x, y, translate, scale) {
         var xn=(x-translate[0])/scale;
@@ -341,8 +356,9 @@ module.exports = function (graphContainerSelector) {
             console.log("parents Pos"+parPos);
 			console.log("rendering element "+testObj.getPortDragingObj());
 
-			testObj.getPortDragingObj().attr("cx",grPos.x-parPos.x-testObj.x)
-				                       .attr("cy",grPos.y-parPos.y-testObj.y);
+			// one pixel offset in x direction to be able to hover over other elements;
+			testObj.getPortDragingObj().attr("x2",grPos.x-parPos.x-testObj.x-1)
+				                       .attr("y2",grPos.y-parPos.y-testObj.y);
 
 
 

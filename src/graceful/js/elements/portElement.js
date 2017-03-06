@@ -121,7 +121,7 @@ module.exports = function () {
             //dragover drop dragstart
 
             svgRoot.on("mousedown",function(){ dragStart() });
-          //  svgRoot.on("mouseup", function(){ dragOver()  });
+            svgRoot.on("mouseup", function(){ dragOver()  });
           //  svgRoot.on("mousemove",     function(){ draging()  });
 
 
@@ -130,6 +130,13 @@ module.exports = function () {
 
         };
 
+        this.removeTempArrow=function(){
+            console.log("removing Temp Arrow Element");
+            if (tempArrowElement)
+                tempArrowElement.remove();
+            tempArrowElement=undefined;
+
+        };
 
         this.getPortDragingObj=function(){
             return tempArrowElement;
@@ -142,13 +149,44 @@ module.exports = function () {
             DEF.CL("Prevented default? "+ d3.event.defaultPrevented);
 
             // create the arrow;
+            var MARKER_FILL_COLOR="#fff";
+            var LINK_COLOR="#f0f";
+            var LINK_SIZE="2";
 
 
-            tempArrowElement=svgRoot.append("circle")
-                .attr("style","fill : #f0f;")
-                            .attr("r", 20)
-                            .attr("cx", 0)
-                            .attr("cy", 0);
+            tempArrowElement= svgRoot.append("line")
+                .attr("x1",  0)
+                .attr("y1",  0)
+                .attr("x2", 0)
+                .attr("y2", 0)
+                .attr('style', "stroke: " + LINK_COLOR + ";stroke-width: " + LINK_SIZE + ";");
+
+                // create the marker
+                var scale = 2.0,
+                    vx = -12 * scale,
+                    vy = -8 * scale,
+                    lx = 24 * scale,
+                    ly = 16 * scale,
+                    wh = 12 * scale;
+
+                var m1X = -12 * scale;
+                var m1Y = 8 * scale;
+                var m2X = -12 * scale;
+                var m2Y = -8 * scale;
+                var viewBoxString = "" + vx + " " + vy + " " + lx + " " + ly;
+                var marker = svgRoot.append("marker")
+                    .datum(that)
+                    .attr("id", "TEMPLINK")
+                    .attr("viewBox", viewBoxString) // temp
+                    .attr("markerWidth", wh)
+                    .attr("markerHeight", wh)
+                    .attr("markerUnits", "userSpaceOnUse")
+                    .attr("orient", "auto");
+                var el = marker.append("path")
+                    .attr("d", "M0,0L " + m1X + "," + m1Y + "L" + m2X + "," + m2Y + "z");
+                el.attr('style', "fill:" + MARKER_FILL_COLOR + "; stroke: " + LINK_COLOR + ";stroke-width: " + LINK_SIZE + ";");
+            tempArrowElement.attr("marker-end", "url(#TEMPLINK)");
+
 
             graph.followObject(that);
             // tempArrowElement= svgRoot.append("line")
@@ -158,14 +196,14 @@ module.exports = function () {
             //     .attr("y2", 50)
             //     .attr('style', "stroke: " + "#f00" + ";stroke-width: " + "2" + ";");
 
-            tempArrowElement.on("mouseup",     function(){ draging()  });
 
 
         }
         function dragOver(){
             portDrag =false;
-            DEF.CL("calling dragOver");
-            tempArrowElement.remove();
+            DEF.CL("calling dragOverASD");
+            graph.stopFollow();
+
 
         }
         function draging(){
