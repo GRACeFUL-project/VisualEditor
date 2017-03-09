@@ -30,7 +30,7 @@ module.exports = function (graph) {
         uploadButton.innerHTML="Upload";
         uploadButton.id="uploadButton";
         uploadButton.setAttribute("class", "inputUpLoader");
-        uploadButton.disabled=true;
+        uploadButton.disabled=false;
 
 
         infoContainer.node().appendChild(loaderPath);
@@ -47,7 +47,10 @@ module.exports = function (graph) {
 
         var uploadButtonNode=d3.select("#uploadButton");
         uploadButtonNode.on("click",function(){
-            console.log("test"+selectedFiles);
+            var test=loaderPathNode.property("files");
+		    console.log("test "+test);
+			selectedFiles = loaderPathNode.property("files");
+            console.log("testFile"+selectedFiles);
             console.log("File "+selectedFiles[0].name);
             var file=selectedFiles[0];
             var reader = new FileReader();

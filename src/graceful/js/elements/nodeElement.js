@@ -23,7 +23,7 @@ module.exports = function () {
 
 
         var portObjects=[];
-
+        var forceLinks=[];
 
         // rendering elements
         var nodeElement,
@@ -44,6 +44,18 @@ module.exports = function () {
             charge=-500;
         // parameters
         var parametersAsString;
+
+        this.getLinks=function(){
+
+            var fl=[];
+            for (var i=0;i<forceLinks.length;i++)
+                fl=fl.concat(forceLinks[i].getLinkForceLinks());
+
+            return fl;
+        };
+        this.addLink=function(link){
+            forceLinks.push(link);
+        };
 
 
         this.parametersAsString=function(text){
@@ -295,6 +307,7 @@ module.exports = function () {
             this.imageURL(other.imageURL());
             this.radius(other.radius());
             this.copyPorts(other.getPortObjs());
+            this.hoverText(other.hoverText());
             this.label(other.label()+" "+this.id());
 
 

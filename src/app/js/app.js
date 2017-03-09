@@ -27,6 +27,7 @@ module.exports = function () {
 		d3.select(window).on("resize", adjustSize);
 		graph.start();
 		adjustSize();
+		console.log("Graph initialized");
 	};
 
 	function adjustSize() {

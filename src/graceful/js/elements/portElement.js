@@ -54,8 +54,12 @@ module.exports = function () {
         this.setParentNodeElement=function(parent){
             parentNodeElement=parent;
         };
+		this.getParentNodeElement=function(){
+			return parentNodeElement;
+		};
 
-        this.getParentPos=function(){
+
+		this.getParentPos=function(){
             if (parentNodeElement){
                 return {x: parentNodeElement.x, y: parentNodeElement.y};
             }else return {x: 0, y: 0};
@@ -113,6 +117,7 @@ module.exports = function () {
                 .classed("hoverPortImage", true)
                 .attr("r", radius);
             hoverPrimitive.classed("hidden",true);
+			svgRoot.append("title").text(that.hoverText());
             DEF.CL("------------------------------------------------------");
             svgRoot.on("mouseover", function () {onImageHover() ;});
             svgRoot.on("mouseout" , function () {outImageHover();});
@@ -202,6 +207,16 @@ module.exports = function () {
         function dragOver(){
             portDrag =false;
             DEF.CL("calling dragOverASD");
+
+            var other=graph.getTestObject();
+
+            if (other.getParentNodeElement()!==that.getParentNodeElement()
+            && other.elementType()===that.elementType()){
+
+                graph.createLinkBetweenNodes(that.getParentNodeElement(),other.getParentNodeElement());
+
+            }
+
             graph.stopFollow();
 
 
@@ -231,7 +246,8 @@ module.exports = function () {
         this.deepCopy=function(other){
           that.radius(other.radius());
           that.imageURL(other.imageURL());
-
+          that.hoverText(other.hoverText());
+          that.elementType(other.elementType());
           that.label(other.label());
           that.svgRoot(other.svgRoot());
 
@@ -256,6 +272,22 @@ module.exports = function () {
             }
           //  console.log("hoverred over PORT"+that.labelForCurrentLanguage());
             that.mouseEntered(true);
+
+            if (graph.connectionMode()){
+                // check if we allow the connection;
+                var otherPort=graph.getTestObject();
+				hoverPrimitive.style("fill","#f00");
+                if  (otherPort.getParentNodeElement()===that.getParentNodeElement()){
+					hoverPrimitive.style("fill","#f00");
+					return;
+                }
+
+				if  (otherPort.elementType()===that.elementType())
+					hoverPrimitive.style("fill","#0f0");
+
+			} else
+				hoverPrimitive.style("fill","#f00");
+
             hoverPrimitive.classed("hidden",false);
         }
 

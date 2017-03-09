@@ -1,5 +1,6 @@
 var _ = require("lodash/core");
 var nodeElement= require("./elements/nodeElement")();
+var linkElement= require("./elements/linkElement")();
 
 
 module.exports = function (graphContainerSelector) {
@@ -10,6 +11,7 @@ module.exports = function (graphContainerSelector) {
         masterContainer,
 		graphContainer,
 		nodeContainer,
+		linkLayer,
 
 	// draging variables
 		followNodeElement=false,
@@ -29,13 +31,17 @@ module.exports = function (graphContainerSelector) {
 		now,
 // NODE CONTAINERS
 		instance_container=[],
+		link_container=[],
 		cI=0,
 		inputJsonText,
         inputParser= require("./inputParser")(graph),
 		classNodes,
 		zoom;
 
-
+	graph.connectionMode=function(){
+		return followNodeElement;
+	};
+	graph.getTestObject=function(){ return testObj;};
 	graph.setJSONInputText=function(txt){
 		inputJsonText=txt;
 
@@ -73,6 +79,16 @@ module.exports = function (graphContainerSelector) {
 
 	function updateForceNodes(){
 		force.nodes(instance_container);
+		var forceLinks=[];
+		// concat the links of the instance container;
+		for (var i=0;i<instance_container.length;i++) {
+			var currentNode = instance_container[i];
+			var nodeLinks = currentNode.getLinks();
+			forceLinks = forceLinks.concat(nodeLinks);
+		}
+		force.links(forceLinks);
+		console.log("Force Nodes",force.nodes());
+		console.log("Force Links",force.links());
 
 		if (options.logo().drawForceNodesNumber()===true)
         	d3.select("#numForceNodes").node().innerHTML="#forceNodes:"+force.nodes().length;
@@ -147,6 +163,7 @@ module.exports = function (graphContainerSelector) {
 			.attr("height", options.height())
 			.call(zoom);
         graphContainer=masterContainer.append("g");
+		linkLayer = graphContainer.append("g").classed("linkContainer", true);
 
 	}
 
@@ -224,8 +241,9 @@ module.exports = function (graphContainerSelector) {
         });
         force.gravity(0.025);
         force.linkStrength(1); // Flexibility of links
-
-		 force.nodes().forEach(function (n) {
+		force.linkDistance(400);
+		force.linkStrength(options.linkStrength()); // Flexibility of links
+     	force.nodes().forEach(function (n) {
 		 	n.frozen(paused);
 		 });
 	}
@@ -325,6 +343,44 @@ module.exports = function (graphContainerSelector) {
 		//graph.getMousePositionInGraph();
    	};
 
+    graph.createLinkBetweenNodes=function(startNode,endNode){
+    	console.log("generating link between "+startNode+"->"+endNode);
+
+    	// we only need one link between these two node;
+		var linkExists=false;
+		// check if we should generate a link;
+		var sLinks=startNode.getLinks();
+		var eLinks=endNode.getLinks();
+		var i;
+		for (i=0;i<sLinks.length;i++){
+			if (sLinks[i].domain()=== startNode && sLinks[i].range()===endNode)
+				linkExists=true;
+			if (sLinks[i].domain()=== endNode && sLinks[i].range()===startNode)
+				linkExists=true;
+		}
+		for (i=0;i<eLinks.length;i++){
+			if (eLinks[i].domain()=== startNode && eLinks[i].range()===endNode)
+				linkExists=true;
+			if (eLinks[i].domain()=== endNode && eLinks[i].range()===startNode)
+				linkExists=true;
+		}
+
+		if (linkExists){
+			console.log("THIS LINK ALREADY EXISTS ... NOTHING TO DO HERE");
+		}
+		else{
+			// create a link element
+			var link=new linkElement(graph);
+			link.domain(startNode);
+			link.range(endNode);
+		//	link.svgRoot(linkLayer);
+			console.log("link created");
+			startNode.addLink(link);
+			updateForceNodes();
+			redrawContent();
+		}
+
+	};
     graph.stopFollow=function () {
     	if (followNodeElement) {
             console.log("Stop follow, and remove node" + followNodeElement);
@@ -332,6 +388,7 @@ module.exports = function (graphContainerSelector) {
             });
             testObj.removeTempArrow();
             followNodeElement = false;
+            testObj=null;
         }
 
     };
@@ -346,36 +403,19 @@ module.exports = function (graphContainerSelector) {
 
 
         graph.getMousePositionInGraph=function(){
-
-        	console.log("Client ScreenPos"+ d3.event.clientX +  " "+d3.event.clientY);
-        	//screepos to graphpos;
 			var grPos=getScreenCoords(d3.event.clientX,d3.event.clientY,graphTranslation,zoomFactor);
-            console.log("graph  ScreenPos"+ grPos.x+" "+grPos.y);
-
             var parPos=testObj.getParentPos();
-            console.log("parents Pos"+parPos);
-			console.log("rendering element "+testObj.getPortDragingObj());
-
 			// one pixel offset in x direction to be able to hover over other elements;
-			testObj.getPortDragingObj().attr("x2",grPos.x-parPos.x-testObj.x-1)
-				                       .attr("y2",grPos.y-parPos.y-testObj.y);
+
+			//get direction offset;
+			var x2=grPos.x-parPos.x-testObj.x;
+			var y2=grPos.y-parPos.y-testObj.y;
 
 
+			testObj.getPortDragingObj().attr("x2",x2-2)
+				                       .attr("y2",y2-2);
 
-        //
-        // var offsetX=parseInt(d3.event.movementX);
-        // var offsetY=parseInt(d3.event.movementY);
-        //
-        // var posX=parseInt(tempArrowElement.attr("cx"));
-        // var posY=parseInt(tempArrowElement.attr("cy"));
-        //
-        // var newX=posX+offsetX;
-        // var newY=posY+offsetY;
-        //
-        // DEF.CL("POSOLD:("+posX+" , "+posY+ ")  -> NEW : ("+newX+" , "+newY+")");
-        //
-        // tempArrowElement.attr("cx",newX);
-        // tempArrowElement.attr("cy",newY);
+
 
 
 
