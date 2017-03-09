@@ -103,7 +103,68 @@ module.exports = function () {
         this.updateRendering=function(){
             // only update me
             svgRoot.attr("transform", "translate(" + that.x + "," + that.y + ")");
+            // for each port object compute optiomal location;
+
+            for (var i =0;i<portObjects.length;i++){
+                var aPort=portObjects[i];
+                var friends=aPort.connectedPorts();
+                if (friends.length>0) {
+                    var dirx = 0;
+                    var diry = 0;
+                    for (var j = 0; j < friends.length; j++) {
+                        dirx = dirx + (friends[j].getParentNodeElement().x - this.x);
+                        diry = diry + (friends[j].getParentNodeElement().y - this.y);
+                    }
+                    // normalize vector;
+                    var length = Math.sqrt(dirx * dirx + diry * diry);
+                    var nX = dirx / length;
+                    var nY = diry / length;
+                   // console.log(aPort.x + " " + aPort.y + "->" + that.radius() * nX + " " + that.radius() * nY);
+                    aPort.x=that.radius()*nX;
+                    aPort.y=that.radius()*nY;
+                    aPort.updateRendering();
+                }
+            }
+            // check for conflicts!
+            if (portObjects.length>1){
+                // only if we have more than one portobject we can check for conflicks
+                var conflicts=false;
+                for(i=1;i<portObjects.length;i++){
+                    if (checkPortDistance(portObjects[0],portObjects[i])) {
+                        conflicts = true;
+                        break;
+                    }
+                }
+                if (conflicts===true){
+
+                    // optimize the layout!
+                    //portObjects[0] stays fixed;
+                    
+
+
+                }
+            }
+
         };
+
+        function checkPortDistance(elementA,elementB){
+            var conflict=false;
+
+            var aX=elementA.x;
+            var aY=elementA.y;
+            var bX=elementB.x;
+            var bY=elementB.y;
+
+
+            var distx=aX-bX;
+            var disty=aY-bY;
+            var length=Math.sqrt(distx*distx+disty*disty);
+
+            if (length<elementA.radius())
+                conflict=true;
+
+            return conflict;
+        }
 
         this.svgRoot=function(root){
             if (!arguments.length) return svgRoot;

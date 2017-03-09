@@ -14,6 +14,9 @@ module.exports = function () {
 		this.setupPortConnection=function(elementA,elementB){
 			portNodeA=elementA;
             portNodeB=elementB;
+
+            portNodeA.addFriendPort(portNodeB);
+            portNodeB.addFriendPort(portNodeA);
 		};
 
 
@@ -56,13 +59,7 @@ module.exports = function () {
         	var nX=v_x/length;
             var nY=v_y/length;
 
-            portNodeB.x=parentA.radius()*nX;
-            portNodeB.y=parentA.radius()*nY;
-            portNodeA.x=-parentB.radius()*nX;
-            portNodeA.y=-parentB.radius()*nY;
 
-            portNodeA.updateRendering();
-            portNodeB.updateRendering();
 
 
             pathElement .attr("x1", parentA.x+portNodeA.x)

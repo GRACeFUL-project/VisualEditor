@@ -22,6 +22,7 @@ module.exports = function () {
 
         // rendering elements
         var nodeElement;
+        var rotationEnabled=false;
 
         // node behaviour
         var id,
@@ -31,6 +32,20 @@ module.exports = function () {
             focused,
             mouseEntered,
             label;
+
+        var connectedPorts=[];
+
+        this.rotationEnabled=function (arg){
+            if (!arguments.length) return rotationEnabled;
+            rotationEnabled=arg;
+        }
+        this.addFriendPort=function(port){
+            connectedPorts.push(port);
+        };
+
+        this.connectedPorts=function(){
+            return connectedPorts;
+        };
 
         this.name=function(n){
 			if (!arguments.length) return name;
@@ -48,7 +63,20 @@ module.exports = function () {
 
         this.updateRendering=function(){
             // only update me
-            svgRoot.attr("transform", "translate(" + that.x + "," + that.y + ")");
+            if (HOVERING_ENABLED===false)
+                svgRoot.attr("transform", "translate(" + that.x + "," + that.y + ")");
+            else{
+
+                if (rotationEnabled===true) {
+                    var angle=Math.atan2(that.y,that.x)* (180 / Math.PI);
+                    var image=svgRoot.select("image");
+
+                    image.attr("transform", "rotate("+angle+")");
+                    svgRoot.attr("transform", "translate(" + that.x + "," + that.y + ")");
+                }
+                else
+                    svgRoot.attr("transform", "translate(" + that.x + "," + that.y + ")");
+            }
         };
 
         this.setParentNodeElement=function(parent){
@@ -251,6 +279,7 @@ module.exports = function () {
           that.elementType(other.elementType());
           that.label(other.label());
           that.svgRoot(other.svgRoot());
+          that.rotationEnabled(other.rotationEnabled());
 
           // todo more things;
 

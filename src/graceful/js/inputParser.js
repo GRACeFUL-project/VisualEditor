@@ -65,6 +65,7 @@ module.exports = function (graph) {
 			port.portType(element.type);
 			port.hoverText(element.hoverText);
             port.imageURL(element.imgURL);
+            port.rotationEnabled(element.rotation);
             port.elementType(element.type);
             port.label(element.name);
             inputPorts.push(port);
