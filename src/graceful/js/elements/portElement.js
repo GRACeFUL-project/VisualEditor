@@ -66,7 +66,7 @@ module.exports = function () {
 
         };
         this.imageURL=function(url){
-            console.log("Setting image to URL"+url);
+      //      console.log("Setting image to URL"+url);
             if (!arguments.length) return imageUrl;
             imageUrl=url;
             RENDER_AS_IMAGE=true;
@@ -112,13 +112,13 @@ module.exports = function () {
             if (HOVERING_ENABLED===false) return;
 
 
-            DEF.CL("adding Connections"+ svgRoot);
+            // DEF.CL("adding Connections"+ svgRoot);
             hoverPrimitive=svgRoot.append("circle")
                 .classed("hoverPortImage", true)
                 .attr("r", radius);
             hoverPrimitive.classed("hidden",true);
 			svgRoot.append("title").text(that.hoverText());
-            DEF.CL("------------------------------------------------------");
+            // DEF.CL("------------------------------------------------------");
             svgRoot.on("mouseover", function () {onImageHover() ;});
             svgRoot.on("mouseout" , function () {outImageHover();});
             svgRoot.on("click", onClicked);
@@ -136,7 +136,7 @@ module.exports = function () {
         };
 
         this.removeTempArrow=function(){
-            console.log("removing Temp Arrow Element");
+         //   console.log("removing Temp Arrow Element");
             if (tempArrowElement)
                 tempArrowElement.remove();
             tempArrowElement=undefined;
@@ -151,7 +151,7 @@ module.exports = function () {
             d3.event.stopImmediatePropagation();
             d3.event.preventDefault();
             portDrag=true;
-            DEF.CL("Prevented default? "+ d3.event.defaultPrevented);
+            // DEF.CL("Prevented default? "+ d3.event.defaultPrevented);
 
             // create the arrow;
             var MARKER_FILL_COLOR="#fff";
@@ -206,7 +206,7 @@ module.exports = function () {
         }
         function dragOver(){
             portDrag =false;
-            DEF.CL("calling dragOverASD");
+            // DEF.CL("calling dragOverASD");
 
             var other=graph.getTestObject();
 
@@ -214,6 +214,7 @@ module.exports = function () {
             && other.elementType()===that.elementType()){
 
                 graph.createLinkBetweenNodes(that.getParentNodeElement(),other.getParentNodeElement());
+                graph.createLinkBetweenPorts(that,other);
 
             }
 

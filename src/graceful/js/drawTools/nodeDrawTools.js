@@ -43,15 +43,15 @@ module.exports = (function () {
 
         // based on portObjType (rect, round) add the thing to it;
         // todo: currently allowing only round images, and round ports, extend that.
-        CL("drawing the port node"+portObj.renderType());
+        // CL("drawing the port node"+portObj.renderType());
 
 
         if (portObj.renderType()===DEF.ROUND){
-			console.log("Adding Circle");
+			// console.log("Adding Circle");
              portRoot.append("circle")
                  .attr("style","fill:#fff;")
                 .attr("r", portObj.radius());
-            console.log("Adding Image"+ portObj.imageURL());
+            // console.log("Adding Image"+ portObj.imageURL());
             if (portObj.renderAsImage()===true) {
                 portRoot.append("image")
                     .attr('x', -portObj.radius())

@@ -41,10 +41,14 @@ module.exports = function () {
         var locked=false,
             frozen=false,
             pinned=false,
-            charge=-500;
+            charge=-1500;
         // parameters
         var parametersAsString;
 
+
+        this.getLinkElements=function(){
+            return forceLinks;
+        };
         this.getLinks=function(){
 
             var fl=[];
@@ -289,7 +293,7 @@ module.exports = function () {
 
         this.copyPorts=function(ports){
           portObjects=[];
-          DEF.CL("copying ports");
+          // DEF.CL("copying ports");
           for (var i=0;i<ports.length;i++){
               var portThing=new portElement(graph);
 

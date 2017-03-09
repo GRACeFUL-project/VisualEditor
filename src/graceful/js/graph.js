@@ -1,7 +1,7 @@
 var _ = require("lodash/core");
 var nodeElement= require("./elements/nodeElement")();
 var linkElement= require("./elements/linkElement")();
-
+var portlinkElement= require("./elements/portLinkElements")();
 
 module.exports = function (graphContainerSelector) {
 	var graph = {},
@@ -32,6 +32,7 @@ module.exports = function (graphContainerSelector) {
 // NODE CONTAINERS
 		instance_container=[],
 		link_container=[],
+		port_linkContainer=[],
 		cI=0,
 		inputJsonText,
         inputParser= require("./inputParser")(graph),
@@ -101,6 +102,15 @@ module.exports = function (graphContainerSelector) {
             	nodes[i].updateRendering();
             }
         }
+
+        if (port_linkContainer.length>0){
+        	for (i=0;i<port_linkContainer.length;i++) {
+                port_linkContainer[i].updateLinkElements();
+            }
+
+
+		}
+
         now = Date.now();
         var diff=now-then;
         var fps=(1000 / (diff)).toFixed(2);
@@ -163,7 +173,7 @@ module.exports = function (graphContainerSelector) {
 			.attr("height", options.height())
 			.call(zoom);
         graphContainer=masterContainer.append("g");
-		linkLayer = graphContainer.append("g").classed("linkContainer", true);
+
 
 	}
 
@@ -181,8 +191,13 @@ module.exports = function (graphContainerSelector) {
 		// Empty the graph container
 		graphContainer.selectAll("*").remove();
 
+
+		console.log("redrawing");
+
 		// create container for fixed nodes;
+
         nodeContainer = graphContainer.append("g").classed("nodeContainer", true);
+        linkLayer = nodeContainer.append("g").classed("nodeContainer", true);
 		fixedNodeContainer=graphContainer.append("g").classed("nodeContainer", true);
 
         // Draw nodes
@@ -223,8 +238,15 @@ module.exports = function (graphContainerSelector) {
         nodeElements.each(function (node) {
             node.drawNodeElement(d3.select(this));
         });
+
+        console.log("redrawing PORT ELEMENTS");
+        for (var i=0;i<port_linkContainer.length;i++){
+        	port_linkContainer[i].svgRoot(linkLayer);
+        	port_linkContainer[i].drawLinkElements();
+		}
         force.start();
         refreshGraphStyle();
+
 	}
 	/**
 	 * Applies all options that don't change the graph data.
@@ -242,7 +264,6 @@ module.exports = function (graphContainerSelector) {
         force.gravity(0.025);
         force.linkStrength(1); // Flexibility of links
 		force.linkDistance(400);
-		force.linkStrength(options.linkStrength()); // Flexibility of links
      	force.nodes().forEach(function (n) {
 		 	n.frozen(paused);
 		 });
@@ -289,10 +310,10 @@ module.exports = function (graphContainerSelector) {
             .on("dragstart", function (d) {
                 d3.event.sourceEvent.stopPropagation(); // Prevent panning
                 d.locked(true);
-                console.log("NODE DRAG START");
+               // console.log("NODE DRAG START");
             })
             .on("drag", function (d) {
-                console.log("NODE DRAG ");
+               // console.log("NODE DRAG ");
                 d.px = d3.event.x;
                 d.py = d3.event.y;
                 force.resume();
@@ -304,7 +325,7 @@ module.exports = function (graphContainerSelector) {
                 }
             })
             .on("dragend", function (d) {
-                console.log("NODE DRAG END");
+             //   console.log("NODE DRAG END");
                 d.locked(false);
             });
         // Apply the zooming factor.
@@ -343,33 +364,54 @@ module.exports = function (graphContainerSelector) {
 		//graph.getMousePositionInGraph();
    	};
 
+    graph.createLinkBetweenPorts=function(portA,portB){
+
+		// todo : check if already exists;
+
+
+        var portLink=new portlinkElement(graph);
+        portLink.svgRoot(linkLayer);
+        portLink.setupPortConnection(portA,portB);
+        port_linkContainer.push(portLink);
+
+        redrawContent();
+
+	};
+
     graph.createLinkBetweenNodes=function(startNode,endNode){
-    	console.log("generating link between "+startNode+"->"+endNode);
+    	console.log("generating link between "+startNode.labelForCurrentLanguage()+"->"+endNode.labelForCurrentLanguage());
 
     	// we only need one link between these two node;
 		var linkExists=false;
 		// check if we should generate a link;
-		var sLinks=startNode.getLinks();
-		var eLinks=endNode.getLinks();
+		var sLinks=startNode.getLinkElements();
+		var eLinks=endNode.getLinkElements();
 		var i;
 		for (i=0;i<sLinks.length;i++){
-			if (sLinks[i].domain()=== startNode && sLinks[i].range()===endNode)
-				linkExists=true;
-			if (sLinks[i].domain()=== endNode && sLinks[i].range()===startNode)
-				linkExists=true;
+             console.log("domain"+ sLinks[i].domain()+ "range"+ sLinks[i].range());
+             console.log("domain"+ sLinks[i].domain().labelForCurrentLanguage()+ "range"+ sLinks[i].range().labelForCurrentLanguage());
+			if (sLinks[i].domain()=== startNode && sLinks[i].range()===endNode) {
+		        linkExists = true;
+            }
+			if (sLinks[i].domain()=== endNode && sLinks[i].range()===startNode) {
+                linkExists = true;
+            }
 		}
 		for (i=0;i<eLinks.length;i++){
-			if (eLinks[i].domain()=== startNode && eLinks[i].range()===endNode)
-				linkExists=true;
-			if (eLinks[i].domain()=== endNode && eLinks[i].range()===startNode)
-				linkExists=true;
+			if (eLinks[i].domain()=== startNode && eLinks[i].range()===endNode) {
+                linkExists = true;
+            }
+			if (eLinks[i].domain()=== endNode && eLinks[i].range()===startNode) {
+                linkExists = true;
+            }
 		}
 
-		if (linkExists){
-			console.log("THIS LINK ALREADY EXISTS ... NOTHING TO DO HERE");
+		if (linkExists===true){
+			return;
 		}
 		else{
 			// create a link element
+            // console.log("CREATE THE LINK between "+startNode+"->"+endNode);
 			var link=new linkElement(graph);
 			link.domain(startNode);
 			link.range(endNode);
@@ -408,12 +450,22 @@ module.exports = function (graphContainerSelector) {
 			// one pixel offset in x direction to be able to hover over other elements;
 
 			//get direction offset;
+
+			var x1=parseFloat(testObj.getPortDragingObj().attr("x1"));
+            var y1=parseFloat(testObj.getPortDragingObj().attr("y1"));
 			var x2=grPos.x-parPos.x-testObj.x;
 			var y2=grPos.y-parPos.y-testObj.y;
 
 
-			testObj.getPortDragingObj().attr("x2",x2-2)
-				                       .attr("y2",y2-2);
+			var dirX=x2-x1;
+            var dirY=y2-y1;
+
+            var length=Math.sqrt(dirX*dirX+dirY*dirY);
+            var nX=dirX/length;
+            var nY=dirY/length;
+
+			testObj.getPortDragingObj().attr("x2",x2-5*nX)
+				                       .attr("y2",y2-5*nY);
 
 
 
