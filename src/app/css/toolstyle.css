@@ -578,10 +578,9 @@ ul#optionsMenu > li:hover .aboutMenu {
 }
 .inputUpLoader {
 	cursor: pointer;
-	float: right;
 	height: 20px;
 	padding: 0;
-	width: 25%;
+	width: 50%;
 	border: 1px solid #34495E;
 	background-color: #ecf0f1;
 

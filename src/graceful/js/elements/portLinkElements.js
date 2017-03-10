@@ -36,6 +36,8 @@ module.exports = function () {
 
 		/** -- Rendering Things -- **/
 		this.drawLinkElements = function () {
+			// calling
+			console.log("calling drawLInk Elements");
 			drawLink();
 
 		};
@@ -79,10 +81,12 @@ module.exports = function () {
 		function drawLink() {
 
 			// coputing transformations; // linklayer is global;
-
+			console.log("drawing LINK !--------------------------------");
 			var parentA=portNodeA.getParentNodeElement();
             var parentB=portNodeB.getParentNodeElement();
 
+            console.log("parentA"+parentA);
+            console.log("parentB"+parentB);
 
 
 			var v_x = parentA.x + portNodeA.x - parentB.x + portNodeB.x;

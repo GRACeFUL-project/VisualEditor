@@ -5,11 +5,16 @@ module.exports = function (graph) {
     // search for better way , scope things into objects or smth
     var title;
     var comment;
+    var loadedFileName;
 
 
     metaInfo.setup=function(){
         infoContainer=d3.select("#metaInfoObject");
-        var loaderPath,uploadButton;
+        var tools=document.createElement('div');
+        var loaderPath,uploadButton,exportButton;
+        var loaderPathContainer=document.createElement('div'),
+            uploadButtonContainer=document.createElement('div'),
+            exportButtonContainer=document.createElement('div');
 
         loaderPath=document.createElement('input');
         loaderPath.id="jsonFilePath";
@@ -33,8 +38,27 @@ module.exports = function (graph) {
         uploadButton.disabled=false;
 
 
-        infoContainer.node().appendChild(loaderPath);
-        infoContainer.node().appendChild(uploadButton);
+
+
+
+        exportButton=document.createElement('a');
+        // <a href="#" download id="exportJson">Export as JSON</a></li>
+        exportButton.href="#";
+        exportButton.download="";
+        exportButton.innerHTML="Save/Export";
+        exportButton.id="exportButton";
+        exportButton.setAttribute("class", "inputUpLoader");
+
+        loaderPathContainer.appendChild(loaderPath);
+        uploadButtonContainer.appendChild(uploadButton);
+        exportButtonContainer.appendChild(document.createElement('br'));
+        exportButtonContainer.appendChild(exportButton);
+        tools.appendChild(loaderPathContainer);
+        tools.appendChild(uploadButtonContainer);
+        tools.appendChild(exportButtonContainer);
+
+        infoContainer.node().appendChild(tools);
+
 
         var loaderPathNode=d3.select("#jsonFilePath");
         loaderPathNode.on("input",function(){
@@ -50,18 +74,27 @@ module.exports = function (graph) {
             var test=loaderPathNode.property("files");
 		    console.log("test "+test);
 			selectedFiles = loaderPathNode.property("files");
+			if (selectedFiles.length===0)
+			    return;
             console.log("testFile"+selectedFiles);
             console.log("File "+selectedFiles[0].name);
             var file=selectedFiles[0];
+            loadedFileName=file.name;
+            var exportButton=d3.select("#exportButton");
+            exportButton.disabled=false;
             var reader = new FileReader();
             reader.readAsText(file);
+
             reader.onload = function () {
-                console.log("reading");
                 graph.setJSONInputText(reader.result);
             };
 
-
         });
+
+        var exportButton=d3.select("#exportButton");
+        exportButton.on("click",writeJSON);
+
+
 
         // console.log("labelNode"+loaderLabelNode);
         // loaderLabelNode.on("click",function(){
@@ -131,6 +164,19 @@ module.exports = function (graph) {
         comment=c;
     };
 
+
+    function writeJSON(){
+        var exportJsonButton=d3.select("#exportButton");
+        var jOBJ= graph.getOutputJSON();
+        console.log("want to write JSON to "+loadedFileName);
+        var exportText = JSON.stringify(jOBJ, null, '  ');
+        console.log("data:  "+ exportText);
+
+        var dataURI = "data:text/json;charset=utf-8," + encodeURIComponent(exportText);
+        exportJsonButton.attr("href", dataURI)
+            .attr("download", loadedFileName );
+
+    }
 
 
     return metaInfo;

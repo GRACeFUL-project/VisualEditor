@@ -44,7 +44,30 @@ module.exports = function () {
             charge=-1500;
         // parameters
         var parametersAsString;
+        var parameters=[];
 
+
+        this.getParamaters=function(){
+            console.log("RETRUNRING PARAMATERS"+parameters.length);
+
+            return parameters;
+        };
+        this.addParameter=function(par){
+
+            var copyOfParameter={};
+            copyOfParameter.name=par.name;
+            copyOfParameter.type=par.type;
+
+            if (par.value===undefined) {
+                console.log("UNDEFINED VALUE");
+                copyOfParameter.value = 0;
+            }
+            else
+                copyOfParameter.value=par.value;
+
+            console.log("adding paramater                              -> "+copyOfParameter.name +" type "+copyOfParameter.type+" value "+copyOfParameter.value);
+            parameters.push(copyOfParameter);
+        };
 
         this.getLinkElements=function(){
             return forceLinks;
@@ -65,8 +88,9 @@ module.exports = function () {
         this.parametersAsString=function(text){
 			if (!arguments.length) return parametersAsString;
 			parametersAsString=text;
-			// todo : parse the parameters and add a value for each parameter
-            // so the user can change it.
+
+
+
         };
         this.hoverText=function(text){
 			if (!arguments.length) return hoverText;
@@ -83,6 +107,14 @@ module.exports = function () {
             elementType=t;
         };
 
+        this.addInstancePort=function(port){
+            console.log("Adding PortElement"+port.label());
+            port.setParentNodeElement(that);
+            port.svgRoot(portsRoot);
+            //port.allowHover(true);
+
+            portObjects.push(port);
+        };
 
         this.addPortObject=function (portObj){
           // need to copy the port object
@@ -234,7 +266,10 @@ module.exports = function () {
                 portObjects[i].y=that.radius()*portPositions[i].y;
            //    DEF.CL("Port "+i+ "POS:"+xOffset+" "+yOffset );
                 nodeDrawTools.drawPortElement(that,portObjects[i]);
-                portObjects[i].addConnectionsToNodeElement();
+               if (that.elementType()==="INSTANCE"){
+                   portObjects[i].allowHover(true);
+               }else
+                    portObjects[i].addConnectionsToNodeElement();
                 portObjects[i].updateRendering();
 
             }
@@ -373,9 +408,11 @@ module.exports = function () {
             this.radius(other.radius());
             this.copyPorts(other.getPortObjs());
             this.hoverText(other.hoverText());
-            this.label(other.label()+" "+this.id());
-
-
+            this.label(other.label());
+            var otherParams=other.getParamaters();
+            for (var j=0;j<otherParams.length;j++){
+                this.addParameter(otherParams[j]);
+            }
         };
 // BASE CLASS DEFINITIONS
         this.focused = function (p) {

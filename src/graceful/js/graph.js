@@ -39,6 +39,67 @@ module.exports = function (graphContainerSelector) {
 		classNodes,
 		zoom;
 
+
+    graph.getOutputJSON=function(name,exportJsonButton){
+        console.log("want to write the file");
+        var TBOX=inputParser.getTBOX();
+        var header=inputParser.getHeader();
+        console.log("TBOX"+TBOX);
+
+        var exportObj = {};
+        exportObj.header=header;
+        exportObj.TBOX=TBOX;
+
+        // create ABOX;
+
+		if (instance_container.length>0){
+			// adding the aBOX TO exportOBJ
+            var ABOX={};
+            ABOX.nodes=[];
+            for (var i=0;i<instance_container.length;i++)
+			{
+				var tempNodeOBJ={};
+				var node=instance_container[i];
+				tempNodeOBJ.name       = node.label();
+                tempNodeOBJ.imgURL     = node.imageURL();
+                tempNodeOBJ.hoverText  = node.hoverText();
+				tempNodeOBJ.parameters = [];
+				console.log("PARAMETERS"+node.getParamaters());
+				for (var x=0;x<node.getParamaters().length;x++){
+					tempNodeOBJ.parameters.push(node.getParamaters()[x]);
+				}
+				tempNodeOBJ.identity   = node.id();
+                tempNodeOBJ.interface  = [];
+
+                for (var j=0;j<node.getPortObjs().length;j++){
+                	var tempPort={};
+
+                    tempPort.name=node.getPortObjs()[j].label();
+                    tempPort.type=node.getPortObjs()[j].elementType();
+                    tempPort.hoverText=node.getPortObjs()[j].hoverText();
+                    tempPort.imgURL=node.getPortObjs()[j].imageURL();
+                    tempPort.rotation=node.getPortObjs()[j].rotationEnabled();
+                    tempPort.connection=[];
+                    var con=node.getPortObjs()[j].getConnections();
+                    for (var c=0;c<con.length;c++)
+                        tempPort.connection.push(con[c]);
+                    tempNodeOBJ.interface.push(tempPort);
+				}
+				ABOX.nodes.push(tempNodeOBJ);
+			}
+			exportObj.ABOX=ABOX;
+
+		}
+
+
+		return exportObj;
+
+
+
+
+    };
+
+
 	graph.connectionMode=function(){
 		return followNodeElement;
 	};
@@ -47,17 +108,112 @@ module.exports = function (graphContainerSelector) {
 		inputJsonText=txt;
 
 		classNodes=inputParser.parse(inputJsonText);
+        redrawContent();
+		var instanceNodes=inputParser.parseABOX(inputJsonText);
+		if (instanceNodes.highestId>0)
+			cI=instanceNodes.highestId+1;
 
+		// check connections
+		if (instanceNodes.connections.length>0){
+			// add connections;
+
+			for (var iC=0;iC<instanceNodes.connections.length;iC++){
+				// identify the nodes
+				var con=instanceNodes.connections[iC];
+				var friendId=con.friendId;
+				var friendPort=con.portName;
+
+				console.log("friendId: "+friendId+"  portName "+friendPort);
+				var startNode=con.node;
+				var startPort=con.port;
+				var endNode;
+				var endPort;
+				// search for the endNode;
+				for (var iE=0;iE<instanceNodes.nodes.length;iE++){
+					if (instanceNodes.nodes[iE].id()===friendId)
+						endNode=instanceNodes.nodes[iE];
+				}
+				// find endPort
+				for (var iP=0;iP<endNode.getPortObjs().length;iP++){
+					if (endNode.getPortObjs()[iP].label()===friendPort){
+						endPort=endNode.getPortObjs()[iP];
+					}
+				}
+
+                addForceLink(startNode,endNode);
+                addPortLink(startPort,endPort);
+                startPort.addConnection(endNode.id(),endPort.label());
+                // graph.createLinkBetweenPorts(startPort,endPort);
+				console.log("want to create GraphLink  "+startNode.labelForCurrentLanguage()+" "+endNode.labelForCurrentLanguage());
+
+			}
+
+		}
+
+		if (instanceNodes.nodes.length>0){
+			for (var i=0;i<instanceNodes.nodes.length;i++)
+	            instance_container.push(instanceNodes.nodes[i]);
+            updateForceNodes();
+		}
 
         redrawContent();
 
 	};
 
+    function addPortLink(starPort,endPort){
+    	console.log("start: "+starPort.label()+"  "+endPort.label());
+         var portLink=new portlinkElement(graph);
+         portLink.svgRoot(linkLayer);
+         portLink.setupPortConnection(starPort,endPort);
+         port_linkContainer.push(portLink);
+	}
+	function addForceLink(startNode,endNode){
+            console.log("generating FORCE LINK between "+startNode.labelForCurrentLanguage()+"->"+endNode.labelForCurrentLanguage());
+            // we only need one link between these two node;
+            var linkExists=false;
+            // check if we should generate a link;
+            var sLinks=startNode.getLinkElements();
+            var eLinks=endNode.getLinkElements();
+            var i;
+            for (i=0;i<sLinks.length;i++){
+                console.log("domain"+ sLinks[i].domain()+ "range"+ sLinks[i].range());
+                console.log("domain"+ sLinks[i].domain().labelForCurrentLanguage()+ "range"+ sLinks[i].range().labelForCurrentLanguage());
+                if (sLinks[i].domain()=== startNode && sLinks[i].range()===endNode) {
+                    linkExists = true;
+                }
+                if (sLinks[i].domain()=== endNode && sLinks[i].range()===startNode) {
+                    linkExists = true;
+                }
+            }
+            for (i=0;i<eLinks.length;i++){
+                if (eLinks[i].domain()=== startNode && eLinks[i].range()===endNode) {
+                    linkExists = true;
+                }
+                if (eLinks[i].domain()=== endNode && eLinks[i].range()===startNode) {
+                    linkExists = true;
+                }
+            }
+
+            if (linkExists===true){
+                return;
+            }
+            else{
+                // create a link element
+                // console.log("CREATE THE LINK between "+startNode+"->"+endNode);
+                var link=new linkElement(graph);
+                link.domain(startNode);
+                link.range(endNode);
+                //	link.svgRoot(linkLayer);
+                console.log("link created");
+                startNode.addLink(link);
+            }
+	}
+
 
     graph.createNewInstanceNode=function(nodeType){
         var node=new nodeElement(graph);
         var classId=nodeType.id();
-        node.id(classId+"_"+cI);
+        node.id(cI);
         node.deepCopy(nodeType);
         node.elementType("INSTANCE");
         cI++;

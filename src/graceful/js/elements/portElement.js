@@ -23,6 +23,7 @@ module.exports = function () {
         // rendering elements
         var nodeElement;
         var rotationEnabled=false;
+        var connections=[];
 
         // node behaviour
         var id,
@@ -35,10 +36,13 @@ module.exports = function () {
 
         var connectedPorts=[];
 
+        this.getConnections=function(){
+            return connections;
+        };
         this.rotationEnabled=function (arg){
             if (!arguments.length) return rotationEnabled;
             rotationEnabled=arg;
-        }
+        };
         this.addFriendPort=function(port){
             connectedPorts.push(port);
         };
@@ -139,7 +143,8 @@ module.exports = function () {
         this.addConnectionsToNodeElement=function(){
             if (HOVERING_ENABLED===false) return;
 
-
+            console.log("svgRoot"+svgRoot);
+            console.log("Hover Item"+hoverPrimitive);
             // DEF.CL("adding Connections"+ svgRoot);
             hoverPrimitive=svgRoot.append("circle")
                 .classed("hoverPortImage", true)
@@ -232,6 +237,13 @@ module.exports = function () {
 
 
         }
+
+
+        that.addConnection=function(otherId,otherLabel){
+            connections.push(otherId);
+            connections.push(otherLabel);
+        };
+
         function dragOver(){
             portDrag =false;
             // DEF.CL("calling dragOverASD");
@@ -243,6 +255,14 @@ module.exports = function () {
 
                 graph.createLinkBetweenNodes(that.getParentNodeElement(),other.getParentNodeElement());
                 graph.createLinkBetweenPorts(that,other);
+
+                // add information about the connection for the output;
+
+                // currently only one connecion per port; allowed;
+                connections.push(other.getParentNodeElement().id());
+                connections.push(other.label());
+                console.log("THe Connections: "+connections);
+
 
             }
 
