@@ -187,8 +187,8 @@ module.exports = function () {
             // DEF.CL("Prevented default? "+ d3.event.defaultPrevented);
 
             // create the arrow;
-            var MARKER_FILL_COLOR="#fff";
-            var LINK_COLOR="#f0f";
+            var MARKER_FILL_COLOR="#000";
+            var LINK_COLOR="#0f0";
             var LINK_SIZE="2";
 
 

@@ -31,7 +31,7 @@ module.exports = (function () {
             .classed("text", true)
             .attr("x", 0-0.5*node.radius())
             .attr("y", -5-node.radius())
-            .attr("style", "fill:white;")
+            .attr("style", "fill:black;")
             .attr("text-anchor", "middle")
             .text(node.labelForCurrentLanguage());
         return textElement;

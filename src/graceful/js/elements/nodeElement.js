@@ -84,14 +84,6 @@ module.exports = function () {
             forceLinks.push(link);
         };
 
-
-        this.parametersAsString=function(text){
-			if (!arguments.length) return parametersAsString;
-			parametersAsString=text;
-
-
-
-        };
         this.hoverText=function(text){
 			if (!arguments.length) return hoverText;
             hoverText=text;

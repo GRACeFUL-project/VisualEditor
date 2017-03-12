@@ -108,7 +108,7 @@ module.exports = function () {
                 .attr("y1", parentA.y)
                 .attr("x2", parentB.x)
                 .attr("y2", parentB.y)
-                .attr('style', "stroke: " + "#f0f"+ ";stroke-width: " + 5+ ";");
+                .attr('style', "stroke: " + "#000"+ ";stroke-width: " + 2+ ";");
 
 		}
 

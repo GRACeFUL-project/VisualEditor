@@ -5,129 +5,113 @@ module.exports = function (graph) {
     // search for better way , scope things into objects or smth
     var title;
     var comment;
+	var allowExport=false;
     var loadedFileName;
 
 
+
+
+	function setupUploadButton() {
+		var input = d3.select("#file-converter-input"),
+			inputLabel = d3.select("#file-converter-label"),
+			uploadButton = d3.select("#file-converter-button");
+
+		input.on("change", function () {
+			var selectedFiles = input.property("files");
+			if (selectedFiles.length <= 0) {
+				inputLabel.text("Select ontology file");
+				uploadButton.property("disabled", true);
+			} else {
+				inputLabel.text(selectedFiles[0].name);
+				uploadButton.property("disabled", false);
+
+				//keepOntologySelectionOpenShortly();
+			}
+		});
+
+		uploadButton.on("click", function () {
+			var selectedFile = input.property("files")[0];
+			if (!selectedFile) {
+				return false;
+			}
+			//var newHashParameter = "file=" + selectedFile.name;
+			// Trigger the reupload manually, because the iri is not changing
+			// if (location.hash === "#" + newHashParameter) {
+			// 	loadOntologyFromFile();
+			// } else {
+			// 	location.hash = newHashParameter;
+			// }
+		});
+	}
+
     metaInfo.setup=function(){
+		var inputOutput=d3.select("#inputOutput");
         infoContainer=d3.select("#metaInfoObject");
         var tools=document.createElement('div');
-        var loaderPath,uploadButton,exportButton;
+        var loaderPath,exportButton;
+
+        var uploadForm=document.createElement('form');
+        uploadForm.id="uploadJson-Form";
+        var uploadInput=document.createElement('input');
+        uploadInput.type="text";
+        uploadInput.id="JSON_INPUT";
+        uploadInput.placeholder="Select JSON";
+		uploadInput.setAttribute("class", "inputPath");
+        var uploadButton2=document.createElement('button');
+        uploadButton2.type="submit";
+        uploadButton2.id="uploadButton2";
+        uploadButton2.innerHTML="Upload";
+        // set the parent hierarchy;
+        uploadForm.appendChild(uploadInput);
+        uploadForm.appendChild(uploadButton2);
+		uploadButton2.setAttribute("class", "inputUpLoader");
+		uploadButton2.disabled=true;
+
+
+
         var loaderPathContainer=document.createElement('div'),
-            uploadButtonContainer=document.createElement('div'),
             exportButtonContainer=document.createElement('div');
 
         loaderPath=document.createElement('input');
         loaderPath.id="jsonFilePath";
         loaderPath.type="file";
+        loaderPath.style.display="none";
         loaderPath.autocomplete="off";
         loaderPath.placeholder="load a json File";
         loaderPath.setAttribute("class", "inputPath");
-        //loaderPath.setAttribute("class", "hidden");
-
-        // check for childeren
-        var htmlCollection = loaderPath.children;
-        var numEntries = htmlCollection.length;
-        console.log("children "+numEntries);
-
-
-        uploadButton=document.createElement('button');
-        uploadButton.type="submit";
-        uploadButton.innerHTML="Upload";
-        uploadButton.id="uploadButton";
-        uploadButton.setAttribute("class", "inputUpLoader");
-        uploadButton.disabled=false;
-
-
-
 
 
         exportButton=document.createElement('a');
-        // <a href="#" download id="exportJson">Export as JSON</a></li>
         exportButton.href="#";
         exportButton.download="";
-        exportButton.innerHTML="Save/Export";
+        exportButton.innerHTML=" Save/Export ";
         exportButton.id="exportButton";
-        exportButton.setAttribute("class", "inputUpLoader");
+        exportButton.setAttribute("class", "exportButton");
 
         loaderPathContainer.appendChild(loaderPath);
-        uploadButtonContainer.appendChild(uploadButton);
         exportButtonContainer.appendChild(document.createElement('br'));
         exportButtonContainer.appendChild(exportButton);
+
+        tools.appendChild(uploadForm);
         tools.appendChild(loaderPathContainer);
-        tools.appendChild(uploadButtonContainer);
         tools.appendChild(exportButtonContainer);
 
-        infoContainer.node().appendChild(tools);
+
+		var inputHeader= document.createElement('h2');
+		inputHeader.id="inputHeader";
+		inputHeader.innerHTML="Input Output";
+
+		inputOutput.node().appendChild(inputHeader);
+		inputOutput.node().appendChild(tools);
 
 
         var loaderPathNode=d3.select("#jsonFilePath");
         loaderPathNode.on("input",function(){
             selectedFiles = loaderPathNode.property("files");
-            if (selectedFiles>0)
-                uploadButton.disabled=false;
-            else
-                uploadButton.disabled=false;
-        });
-
-        var uploadButtonNode=d3.select("#uploadButton");
-        uploadButtonNode.on("click",function(){
-            var test=loaderPathNode.property("files");
-		    console.log("test "+test);
-			selectedFiles = loaderPathNode.property("files");
-			if (selectedFiles.length===0)
-			    return;
-            console.log("testFile"+selectedFiles);
-            console.log("File "+selectedFiles[0].name);
-            var file=selectedFiles[0];
-            loadedFileName=file.name;
-            var exportButton=d3.select("#exportButton");
-            exportButton.disabled=false;
-            var reader = new FileReader();
-            reader.readAsText(file);
-
-            reader.onload = function () {
-                graph.setJSONInputText(reader.result);
-            };
-
         });
 
         var exportButton=d3.select("#exportButton");
         exportButton.on("click",writeJSON);
-
-
-
-        // console.log("labelNode"+loaderLabelNode);
-        // loaderLabelNode.on("click",function(){
-        //     loaderPathNode.onchange();
-        //
-        //
-        //
-        // });
-
-
-        //
-        // narf.on("change", function () {
-        //     var selectedFiles = narf.property("files");
-        //     if (selectedFiles.length <= 0) {
-        //         uploadButton.disabled=true;
-        //     }else{
-        //         uploadButton.disabled=false;
-        //     }
-        // });
-        //
-        // //
-        // <div class="converter-form">
-        //     <input class="hidden" type="file" id="file-converter-input" autocomplete="off">
-        //     <label class="truncate" id="file-converter-label" for="file-converter-input">Select ontology file</label>
-        // <button type="submit" id="file-converter-button" autocomplete="off" disabled>
-        // Upload
-        // </button>
-        // </div>
-
-
-        // <input type="text" id="iri-converter-input" placeholder="Enter ontology IRI">
-        //  <button type="submit" id="iri-converter-button" disabled>Visualize</button>
-
 
 
         var header= document.createElement('h2');
@@ -144,16 +128,68 @@ module.exports = function (graph) {
         infoContainer.node().appendChild(header);
         infoContainer.node().appendChild(title);
         infoContainer.node().appendChild(comment);
-        // <h2 id="metaInfo">Meta Info</h2>
-        // <h5>Name: <span id="ontoName"></span></h5>
-        //     <h5>Comment: <span id="ontoComment"></span></h5>
-        //     <h5>Iri: <span id="ontoIRI"></span></h5>
-        //     <h5>Version: <span id="version"></span></h5>
-        //     <h5>Author(s): <span id="authors"></span></h5>
-        //     <h5>Nodes: <span id="ontoNodes"></span></h5>
-        //     <h5>Edges: <span id="ontoEdges"></span></h5>
+
+		// setup button connections;
+		setupConverterButtons();
     };
 
+	function setupConverterButtons(){
+		console.log("Setting up");
+
+		var le=d3.select("#JSON_INPUT");
+		var fileSelect=d3.select("#jsonFilePath");
+
+		console.log("le "+le);
+		console.log("fs "+fileSelect);
+
+		le.on("click",function(){
+			console.log("le clicked");
+
+			var hiddenBt=document.getElementById("jsonFilePath");
+			hiddenBt.click();
+		});
+
+		var loaderPathNode=d3.select("#jsonFilePath");
+		loaderPathNode.on("change",function(){
+			selectedFiles = loaderPathNode.property("files");
+			console.log("I have selected Files");
+			if (selectedFiles.length===0)
+				return;
+			console.log("testFile"+selectedFiles);
+			console.log("File "+selectedFiles[0].name);
+			var le=document.getElementById("JSON_INPUT");
+			le.value=selectedFiles[0].name;
+			var bt=document.getElementById("uploadButton2");
+			bt.disabled=false;
+
+		});
+		// connect upload button
+		var upload=d3.select("#uploadButton2");
+		upload.on("click",function(){
+			var test=loaderPathNode.property("files");
+			console.log("test "+test);
+			allowExport=false;
+			selectedFiles = loaderPathNode.property("files");
+			if (selectedFiles.length===0)
+				return;
+			console.log("testFile"+selectedFiles);
+			console.log("File "+selectedFiles[0].name);
+			var file=selectedFiles[0];
+			loadedFileName=file.name;
+			var exportButton=d3.select("#exportButton");
+			exportButton.disabled=false;
+			var reader = new FileReader();
+			reader.readAsText(file);
+
+			reader.onload = function () {
+				graph.setJSONInputText(reader.result);
+			};
+			allowExport=true;
+			d3.event.preventDefault();
+			return false;
+		});
+
+	}
 
     metaInfo.title=function(t){
         if (!arguments.length) return title;
@@ -166,6 +202,7 @@ module.exports = function (graph) {
 
 
     function writeJSON(){
+    	if (allowExport===false) return;
         var exportJsonButton=d3.select("#exportButton");
         var jOBJ= graph.getOutputJSON();
         console.log("want to write JSON to "+loadedFileName);

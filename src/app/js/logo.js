@@ -11,7 +11,6 @@ module.exports = function () {
         logoIMG.setAttribute("src", "https://www.graceful-project.eu/wp-content/themes/graceful/images/favicon-160x160.png");
         logoIMG.setAttribute("width", "96");
         logoIMG.setAttribute("height", "96");
-        // logoIMG.setAttribute("alt", "The Pulpit Rock");
         logoContainer.node().appendChild(logoIMG);
 
 
