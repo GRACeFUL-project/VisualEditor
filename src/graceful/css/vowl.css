@@ -174,7 +174,7 @@ marker path {
 
 /*------- Strokes ------*/
 .class, path, line {
-	stroke-width: 3;
+	stroke-width: 2;
     stroke: #000;
 }
 

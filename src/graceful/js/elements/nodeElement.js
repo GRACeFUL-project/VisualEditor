@@ -239,7 +239,7 @@ module.exports = function () {
             that.addConnectionsToNodeElement(nodeElement);
             hoverPrimitive=nodeRoot.append("circle")
                 .classed("hoverImage", true)
-                .attr("r", radius);
+                .attr("r", radius-1);
             hoverPrimitive.classed("hidden",true);
 
             that.drawPortElements();
