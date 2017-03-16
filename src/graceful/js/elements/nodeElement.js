@@ -36,6 +36,7 @@ module.exports = function () {
             focused,
             mouseEntered,
             hoverText,
+            nameValue,
             label;
         // force node behaviour
         var locked=false,
@@ -47,8 +48,15 @@ module.exports = function () {
         var parameters=[];
 
 
+        this.nameValue=function(val){
+            if (arguments.length===0) {
+                return nameValue;
+            }
+            else nameValue=val;
+        };
+
         this.getParamaters=function(){
-            console.log("RETRUNRING PARAMATERS"+parameters.length);
+         //   console.log("RETRUNRING PARAMATERS"+parameters.length);
 
             return parameters;
         };
@@ -59,13 +67,13 @@ module.exports = function () {
             copyOfParameter.type=par.type;
 
             if (par.value===undefined) {
-                console.log("UNDEFINED VALUE");
+            //    console.log("UNDEFINED VALUE");
                 copyOfParameter.value = 0;
             }
             else
                 copyOfParameter.value=par.value;
 
-            console.log("adding paramater                              -> "+copyOfParameter.name +" type "+copyOfParameter.type+" value "+copyOfParameter.value);
+       //     console.log("adding paramater                              -> "+copyOfParameter.name +" type "+copyOfParameter.type+" value "+copyOfParameter.value);
             parameters.push(copyOfParameter);
         };
 
@@ -100,7 +108,7 @@ module.exports = function () {
         };
 
         this.addInstancePort=function(port){
-            console.log("Adding PortElement"+port.label());
+           // console.log("Adding PortElement"+port.label());
             port.setParentNodeElement(that);
             port.svgRoot(portsRoot);
             //port.allowHover(true);
@@ -110,11 +118,11 @@ module.exports = function () {
 
         this.addPortObject=function (portObj){
           // need to copy the port object
-            console.log("Make a copy of this port "+portObj.label());
+          //  console.log("Make a copy of this port "+portObj.label());
             var cp_obj=new portElement(graph);
             cp_obj.deepCopy(portObj);
             portObjects.push(cp_obj);
-            console.log("Adding Port"+cp_obj.labelForCurrentLanguage()+" to node "+that.labelForCurrentLanguage());
+          //  console.log("Adding Port"+cp_obj.labelForCurrentLanguage()+" to node "+that.labelForCurrentLanguage());
 
             // set the svgRoot and the new id for the port
 
@@ -335,6 +343,7 @@ module.exports = function () {
                 hoverPrimitive.classed("hidden",false);
             }else {
                 that.toggleFocus();
+                graph.updateEditInfo(that);
             }
         }
 
@@ -401,12 +410,18 @@ module.exports = function () {
             this.copyPorts(other.getPortObjs());
             this.hoverText(other.hoverText());
             this.label(other.label());
+            this.nameValue(other.nameValue());
             var otherParams=other.getParamaters();
             for (var j=0;j<otherParams.length;j++){
                 this.addParameter(otherParams[j]);
             }
         };
 // BASE CLASS DEFINITIONS
+
+        this.setFocusedHighlight=function(){
+            nodeElement.classed("focused", that.focused());
+        };
+
         this.focused = function (p) {
             if (!arguments.length) return focused;
             focused = p;

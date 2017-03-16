@@ -40,6 +40,14 @@ module.exports = function (graphContainerSelector) {
 		zoom;
 
 
+    graph.updateEditInfo=function(node){
+    	// get edit population
+		graph.options().sidebar().updateEditInfo(node);
+
+	};
+
+
+
     graph.getOutputJSON=function(){
         var exportObj = {};
 		if (instance_container.length>0){
@@ -256,7 +264,7 @@ module.exports = function (graphContainerSelector) {
     }
 
     graph.update = function () {
-
+        redrawContent();
     };
 
 	/** Loads all settings, removes the old graph (if it exists) and draws a new one. */

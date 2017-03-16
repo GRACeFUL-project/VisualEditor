@@ -169,6 +169,7 @@ module.exports = function (graph) {
                 node.imageURL(imgURL);
                 node.elementType("CLASS_NODE"); // setting the type of the node to be a class node
                 node.label(nodeName);
+                node.nameValue(nodeName);
                 node.hoverText(hoverText);
 
                 for (var pl=0;pl<params.length;pl++){

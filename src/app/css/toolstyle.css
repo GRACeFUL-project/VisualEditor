@@ -575,8 +575,17 @@ ul#optionsMenu > li:hover .aboutMenu {
 	width: 60%;
 	border: 1px solid #34495E;
 	cursor: pointer;
-
 }
+
+.lineEdit{
+	box-sizing: border-box;
+	height: 20px;
+	padding: 0px 0px;
+	width: 40%;
+	border: 1px solid #34495E;
+}
+
+
 .inputUpLoader {
 	cursor: pointer;
 	height: 22px;

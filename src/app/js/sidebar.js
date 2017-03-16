@@ -9,6 +9,7 @@ module.exports = function (graph) {
 		languageTools = graceful.util.languageTools(),
 	// Required for reloading when the language changes
 		ontologyInfo,
+		selectedNode,
 		lastSelectedElement;
 
 
@@ -445,5 +446,106 @@ module.exports = function (graph) {
 	}
 
 
-	return sidebar;
+
+
+	/** -----------------------------*/
+
+	sidebar.updateEditInfo=function(node) {
+        selectedNode=node;
+        var editContainer = d3.select("#edit_DIV");
+        clearEditInfo();
+
+        // add name of the node
+        var nodesName = document.createElement('h5');
+        nodesName.innerHTML = "Name : " + node.nameValue(); // the given name in the library
+        editContainer.node().appendChild(nodesName);
+
+
+        var labelDiv = document.createElement('div');
+        var LabelText = document.createElement('h5');
+        var LabelEdit = document.createElement('input');
+        LabelEdit.type="text";
+        LabelEdit.id="NODE_LABEL_EDIT";
+        LabelEdit.placeholder="";
+        LabelEdit.value=node.labelForCurrentLanguage();
+        LabelEdit.setAttribute("class", "lineEdit");
+
+        // add the edit input LineEdit
+
+        LabelText.innerHTML = "Label : "; // the Showing name in the graph.
+		labelDiv.appendChild(LabelText);
+        LabelText.appendChild(LabelEdit);
+        editContainer.node().appendChild(labelDiv);
+
+        d3.select("#NODE_LABEL_EDIT").on("keydown", userInput);
+
+
+        // get the parameters of the node;
+		var params=node.getParamaters();
+		for (var i=0;i<params.length;i++){
+            var paramDiv = document.createElement('div');
+            var paramText = document.createElement('h5');
+            var paramEdit = document.createElement('input');
+            paramEdit.type="text";
+            paramEdit.id="paramId"+i;
+            paramEdit.placeholder="";
+            paramEdit.value=params[i].value;
+            paramEdit.setAttribute("class", "lineEdit");
+			paramEdit.innerHTML="("+params[i].type+")";
+            // add the edit input LineEdit
+
+            paramText.innerHTML = params[i].name+"("+params[i].type+") : "; // the Showing name in the graph.
+            paramDiv.appendChild(paramText);
+            paramText.appendChild(paramEdit);
+            editContainer.node().appendChild(paramDiv);
+            var idString="#paramId"+i;
+            d3.select(idString).on("keydown", userInput);
+		}
+
+        //
+
+
+        //
+        var trigger = d3.select("#edit_TRIGGER");
+        trigger.classed("accordion-trigger-active", true);
+        editContainer.classed("hidden", false);
+    };
+
+    function clearEditInfo(){
+        var editContainer=d3.select("#edit_DIV");
+        var  htmlCollection = editContainer.node().children;
+        var numEntries = htmlCollection.length;
+        for (i = 0; i < numEntries; i++)
+            htmlCollection[0].remove();
+
+        var trigger=d3.select("#edit_TRIGGER");
+        trigger.classed("accordion-trigger-active", false);
+        editContainer.classed("hidden", true);
+    }
+
+	function userInput(){
+
+        if (d3.event.keyCode === 13) {
+        	console.log("Enter Was Pressed");
+        	var newLabel= d3.select("#NODE_LABEL_EDIT").node().value;
+			selectedNode.label(newLabel);
+
+			// update the parameters;
+            var params=selectedNode.getParamaters();
+            for (var i=0;i<params.length;i++){
+                 var valueId="paramId"+i;
+                 var newvalue= d3.select("#"+valueId).node().value;
+                 params[i].value=newvalue;
+            }
+
+            graph.update();
+			selectedNode.setFocusedHighlight();
+        }
+	}
+
+
+
+
+
+    return sidebar;
 };

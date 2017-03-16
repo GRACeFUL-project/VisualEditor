@@ -143,8 +143,8 @@ module.exports = function () {
         this.addConnectionsToNodeElement=function(){
             if (HOVERING_ENABLED===false) return;
 
-            console.log("svgRoot"+svgRoot);
-            console.log("Hover Item"+hoverPrimitive);
+          //  console.log("svgRoot"+svgRoot);
+         //   console.log("Hover Item"+hoverPrimitive);
             // DEF.CL("adding Connections"+ svgRoot);
             hoverPrimitive=svgRoot.append("circle")
                 .classed("hoverPortImage", true)
@@ -261,7 +261,7 @@ module.exports = function () {
                 // currently only one connecion per port; allowed;
                 connections.push(other.getParentNodeElement().id());
                 connections.push(other.label());
-                console.log("THe Connections: "+connections);
+              //  console.log("THe Connections: "+connections);
 
 
             }
@@ -367,6 +367,9 @@ module.exports = function () {
 
 
 // BASE CLASS DEFINITIONS
+
+
+
         this.focused = function (p) {
             if (!arguments.length) return focused;
             focused = p;

@@ -21,6 +21,7 @@ module.exports = function () {
 		sidebar.setup();
 		logo.setup();
 		metaInfo.setup();
+		options.sidebar(sidebar);
 		options.graphContainerSelector(GRAPH_SELECTOR);
 		options.logo(logo);
 		options.metaInfo(metaInfo);
