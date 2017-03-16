@@ -40,31 +40,19 @@ module.exports = function (graphContainerSelector) {
 		zoom;
 
 
-    graph.getOutputJSON=function(name,exportJsonButton){
-        console.log("want to write the file");
-        var TBOX=inputParser.getTBOX();
-        var header=inputParser.getHeader();
-        console.log("TBOX"+TBOX);
-
+    graph.getOutputJSON=function(){
         var exportObj = {};
-        exportObj.header=header;
-        exportObj.TBOX=TBOX;
-
-        // create ABOX;
-
 		if (instance_container.length>0){
 			// adding the aBOX TO exportOBJ
-            var ABOX={};
-            ABOX.nodes=[];
+            exportObj.nodes=[];
             for (var i=0;i<instance_container.length;i++)
 			{
 				var tempNodeOBJ={};
 				var node=instance_container[i];
 				tempNodeOBJ.name       = node.label();
-                tempNodeOBJ.imgURL     = node.imageURL();
-                tempNodeOBJ.hoverText  = node.hoverText();
+//                tempNodeOBJ.imgURL     = node.imageURL();
+//                tempNodeOBJ.hoverText  = node.hoverText();
 				tempNodeOBJ.parameters = [];
-				console.log("PARAMETERS"+node.getParamaters());
 				for (var x=0;x<node.getParamaters().length;x++){
 					tempNodeOBJ.parameters.push(node.getParamaters()[x]);
 				}
@@ -76,27 +64,19 @@ module.exports = function (graphContainerSelector) {
 
                     tempPort.name=node.getPortObjs()[j].label();
                     tempPort.type=node.getPortObjs()[j].elementType();
-                    tempPort.hoverText=node.getPortObjs()[j].hoverText();
-                    tempPort.imgURL=node.getPortObjs()[j].imageURL();
-                    tempPort.rotation=node.getPortObjs()[j].rotationEnabled();
+                    // tempPort.hoverText=node.getPortObjs()[j].hoverText();
+                    // tempPort.imgURL=node.getPortObjs()[j].imageURL();
+                    // tempPort.rotation=node.getPortObjs()[j].rotationEnabled();
                     tempPort.connection=[];
                     var con=node.getPortObjs()[j].getConnections();
                     for (var c=0;c<con.length;c++)
                         tempPort.connection.push(con[c]);
                     tempNodeOBJ.interface.push(tempPort);
 				}
-				ABOX.nodes.push(tempNodeOBJ);
+                exportObj.nodes.push(tempNodeOBJ);
 			}
-			exportObj.ABOX=ABOX;
-
 		}
-
-
 		return exportObj;
-
-
-
-
     };
 
 
