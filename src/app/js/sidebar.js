@@ -6,11 +6,8 @@
 module.exports = function (graph) {
 
 	var sidebar = {},
-		languageTools = graceful.util.languageTools(),
-	// Required for reloading when the language changes
-		ontologyInfo,
-		selectedNode,
-		lastSelectedElement;
+		selectedNode;
+
 
 
 	/**
@@ -56,411 +53,11 @@ module.exports = function (graph) {
 		});
 	}
 
-	sidebar.clearOntologyInformation= function(){
-
-		d3.select("#title").text("No title available");
-		d3.select("#about").attr("href", "#").attr("target", "_blank").text("not given");
-		d3.select("#version").text("--");
-		d3.select("#authors").text("--");
-		d3.select("#description").text("No description available.");
-		var container = d3.select("#ontology-metadata");
-		container.selectAll("*").remove();
-		d3.select("#classCount")
-			.text("0");
-		d3.select("#objectPropertyCount")
-			.text("0");
-		d3.select("#datatypePropertyCount")
-			.text("0");
-		d3.select("#individualCount")
-			.text("0");
-		d3.select("#nodeCount")
-			.text("0");
-		d3.select("#edgeCount")
-			.text("0");
-
-		// clear selectedNode info
-		var isTriggerActive = d3.select("#selection-details-trigger").classed("accordion-trigger-active");
-		if (isTriggerActive){
-			// close accordion
-			d3.select("#selection-details-trigger").node().click();
-		}
-		showSelectionAdvice();
-
-	};
-
-	/**
-	 * Updates the information of the passed ontology.
-	 * @param data the graph data
-	 * @param statistics the statistics module
-	 */
-	sidebar.updateOntologyInformation = function (data, statistics) {
-		data = data || {};
-		ontologyInfo = data.header || {};
-
-		updateGraphInformation();
-		displayGraphStatistics(data.metrics, statistics);
-		displayMetadata(ontologyInfo.other);
-
-		// Reset the sidebar selection
-		sidebar.updateSelectionInformation(undefined);
-
-		setLanguages(ontologyInfo.languages);
-	};
-
-	function setLanguages(languages) {
-		languages = languages || [];
-
-		// Put the default and unset label on top of the selection labels
-		languages.sort(function (a, b) {
-			if (a === graceful.util.constants().LANG_IRIBASED) {
-				return -1;
-			} else if (b === graceful.util.constants().LANG_IRIBASED) {
-				return 1;
-			}
-			if (a === graceful.util.constants().LANG_UNDEFINED) {
-				return -1;
-			} else if (b === graceful.util.constants().LANG_UNDEFINED) {
-				return 1;
-			}
-			return a.localeCompare(b);
-		});
-
-		var languageSelection = d3.select("#language")
-			.on("change", function () {
-				graph.language(d3.event.target.value);
-				updateGraphInformation();
-				sidebar.updateSelectionInformation(lastSelectedElement);
-			});
-
-		languageSelection.selectAll("option").remove();
-		languageSelection.selectAll("option")
-			.data(languages)
-			.enter().append("option")
-			.attr("value", function (d) {
-				return d;
-			})
-			.text(function (d) {
-				return d;
-			});
-
-		if (!trySelectDefaultLanguage(languageSelection, languages, "en")) {
-			if (!trySelectDefaultLanguage(languageSelection, languages, graceful.util.constants().LANG_UNDEFINED)) {
-				trySelectDefaultLanguage(languageSelection, languages, graceful.util.constants().LANG_IRIBASED);
-			}
-		}
-	}
-
-	function trySelectDefaultLanguage(selection, languages, language) {
-		var langIndex = languages.indexOf(language);
-		if (langIndex >= 0) {
-			selection.property("selectedIndex", langIndex);
-			graph.language(language);
-			return true;
-		}
-
-		return false;
-	}
-
-	function updateGraphInformation() {
-		var title = languageTools.textInLanguage(ontologyInfo.title, graph.language());
-		d3.select("#title").text(title || "No title available");
-		d3.select("#about").attr("href", ontologyInfo.iri).attr("target", "_blank").text(ontologyInfo.iri);
-		d3.select("#version").text(ontologyInfo.version || "--");
-		var authors = ontologyInfo.author;
-		if (typeof authors === "string") {
-			// Stay compatible with author info as strings after change in january 2015
-			d3.select("#authors").text(authors);
-		} else if (authors instanceof Array) {
-			d3.select("#authors").text(authors.join(", "));
-		} else {
-			d3.select("#authors").text("--");
-		}
-
-		var description = languageTools.textInLanguage(ontologyInfo.description, graph.language());
-		d3.select("#description").text(description || "No description available.");
-	}
-
-	function displayGraphStatistics(deliveredMetrics, statistics) {
-		// Metrics are optional and may be undefined
-		deliveredMetrics = deliveredMetrics || {};
-
-		d3.select("#classCount")
-			.text(deliveredMetrics.classCount || statistics.classCount());
-		d3.select("#objectPropertyCount")
-			.text(deliveredMetrics.objectPropertyCount || statistics.objectPropertyCount());
-		d3.select("#datatypePropertyCount")
-			.text(deliveredMetrics.datatypePropertyCount || statistics.datatypePropertyCount());
-		d3.select("#individualCount")
-			.text(deliveredMetrics.totalIndividualCount || statistics.totalIndividualCount());
-		d3.select("#nodeCount")
-			.text(statistics.nodeCount());
-		d3.select("#edgeCount")
-			.text(statistics.edgeCount());
-	}
-
-	function displayMetadata(metadata) {
-		var container = d3.select("#ontology-metadata");
-		container.selectAll("*").remove();
-
-		listAnnotations(container, metadata);
-
-		if (container.selectAll(".annotation").size() <= 0) {
-			container.append("p").text("No annotations available.");
-		}
-	}
-
-	function listAnnotations(container, annotationObject) {
-		annotationObject = annotationObject || {};  //todo
-
-		// Collect the annotations in an array for simpler processing
-		var annotations = [];
-		for (var annotation in annotationObject) {
-			if (annotationObject.hasOwnProperty(annotation)) {
-				annotations.push(annotationObject[annotation][0]);
-			}
-		}
-
-		container.selectAll(".annotation").remove();
-		container.selectAll(".annotation").data(annotations).enter().append("p")
-			.classed("annotation", true)
-			.classed("statisticDetails", true)
-			.text(function (d) {
-				return d.identifier + ":";
-			})
-			.append("span")
-			.each(function (d) {
-				appendIriLabel(d3.select(this), d.value, d.type === "iri" ? d.value : undefined);
-			});
-	}
-
-	/**
-	 * Update the information of the selected node.
-	 * @param selectedElement the selection or null if nothing is selected
-	 */
-	sidebar.updateSelectionInformation = function (selectedElement) {
-		lastSelectedElement = selectedElement;
-
-		// Click event was prevented when dragging
-		if (d3.event && d3.event.defaultPrevented) {
-			return;
-		}
-
-
-		var isTriggerActive = d3.select("#selection-details-trigger").classed("accordion-trigger-active");
-		if (selectedElement && !isTriggerActive) {
-			d3.select("#selection-details-trigger").node().click();
-		} else if (!selectedElement && isTriggerActive) {
-			showSelectionAdvice();
-			return;
-		}
-
-	};
-
-	function showSelectionAdvice() {
-		setSelectionInformationVisibility(false, false, true);
-	}
-
-	function setSelectionInformationVisibility(showClasses, showProperties, showAdvice) {
-		d3.select("#classSelectionInformation").classed("hidden", !showClasses);
-		d3.select("#propertySelectionInformation").classed("hidden", !showProperties);
-		d3.select("#noSelectionInformation").classed("hidden", !showAdvice);
-	}
-
-	function displayPropertyInformation(property) {
-		showPropertyInformations();
-
-		setIriLabel(d3.select("#propname"), property.labelForCurrentLanguage(), property.iri());
-		d3.select("#typeProp").text(property.type());
-
-		if (property.inverse() !== undefined) {
-			d3.select("#inverse").classed("hidden", false);
-			setIriLabel(d3.select("#inverse span"), property.inverse().labelForCurrentLanguage(), property.inverse().iri());
-		} else {
-			d3.select("#inverse").classed("hidden", true);
-		}
-
-		var equivalentIriSpan = d3.select("#propEquivUri");
-		listNodeArray(equivalentIriSpan, property.equivalents());
-
-		listNodeArray(d3.select("#subproperties"), property.subproperties());
-		listNodeArray(d3.select("#superproperties"), property.superproperties());
-
-		if (property.minCardinality() !== undefined) {
-			d3.select("#infoCardinality").classed("hidden", true);
-			d3.select("#minCardinality").classed("hidden", false);
-			d3.select("#minCardinality span").text(property.minCardinality());
-			d3.select("#maxCardinality").classed("hidden", false);
-
-			if (property.maxCardinality() !== undefined) {
-				d3.select("#maxCardinality span").text(property.maxCardinality());
-			} else {
-				d3.select("#maxCardinality span").text("*");
-			}
-
-		} else if (property.cardinality() !== undefined) {
-			d3.select("#minCardinality").classed("hidden", true);
-			d3.select("#maxCardinality").classed("hidden", true);
-			d3.select("#infoCardinality").classed("hidden", false);
-			d3.select("#infoCardinality span").text(property.cardinality());
-		} else {
-			d3.select("#infoCardinality").classed("hidden", true);
-			d3.select("#minCardinality").classed("hidden", true);
-			d3.select("#maxCardinality").classed("hidden", true);
-		}
-
-		setIriLabel(d3.select("#domain"), property.domain().labelForCurrentLanguage(), property.domain().iri());
-		setIriLabel(d3.select("#range"), property.range().labelForCurrentLanguage(), property.range().iri());
-
-		displayAttributes(property.attributes(), d3.select("#propAttributes"));
-
-		setTextAndVisibility(d3.select("#propDescription"), property.descriptionForCurrentLanguage());
-		setTextAndVisibility(d3.select("#propComment"), property.commentForCurrentLanguage());
-
-		listAnnotations(d3.select("#propertySelectionInformation"), property.annotations());
-	}
-
-	function showPropertyInformations() {
-		setSelectionInformationVisibility(false, true, false);
-	}
-
-	function setIriLabel(element, name, iri) {
-		var parent = d3.select(element.node().parentNode);
-
-		if (name) {
-			element.selectAll("*").remove();
-			appendIriLabel(element, name, iri);
-			parent.classed("hidden", false);
-		} else {
-			parent.classed("hidden", true);
-		}
-	}
-
-	function appendIriLabel(element, name, iri) {
-		var tag;
-
-		if (iri) {
-			tag = element.append("a")
-				.attr("href", iri)
-				.attr("title", iri)
-				.attr("target", "_blank");
-		} else {
-			tag = element.append("span");
-		}
-		tag.text(name);
-	}
-
-	function displayAttributes(attributes, textSpan) {
-		var spanParent = d3.select(textSpan.node().parentNode);
-
-		if (attributes && attributes.length > 0) {
-			// Remove redundant redundant attributes for sidebar
-			removeElementFromArray("object", attributes);
-			removeElementFromArray("datatype", attributes);
-			removeElementFromArray("rdf", attributes);
-		}
-
-		if (attributes && attributes.length > 0) {
-			textSpan.text(attributes.join(", "));
-
-			spanParent.classed("hidden", false);
-		} else {
-			spanParent.classed("hidden", true);
-		}
-	}
-
-	function removeElementFromArray(element, array) {
-		var index = array.indexOf(element);
-		if (index > -1) {
-			array.splice(index, 1);
-		}
-	}
-
-	function displayNodeInformation(node) {
-		showClassInformations();
-
-		setIriLabel(d3.select("#name"), node.labelForCurrentLanguage(), node.iri());
-
-		/* Equivalent stuff. */
-		var equivalentIriSpan = d3.select("#classEquivUri");
-		listNodeArray(equivalentIriSpan, node.equivalents());
-
-		d3.select("#typeNode").text(node.type());
-		listNodeArray(d3.select("#individuals"), node.individuals());
-
-		/* Disjoint stuff. */
-		var disjointNodes = d3.select("#disjointNodes");
-		var disjointNodesParent = d3.select(disjointNodes.node().parentNode);
-
-		if (node.disjointWith() !== undefined) {
-			disjointNodes.selectAll("*").remove();
-
-			node.disjointWith().forEach(function (element, index) {
-				if (index > 0) {
-					disjointNodes.append("span").text(", ");
-				}
-				appendIriLabel(disjointNodes, element.labelForCurrentLanguage(), element.iri());
-			});
-
-			disjointNodesParent.classed("hidden", false);
-		} else {
-			disjointNodesParent.classed("hidden", true);
-		}
-
-		displayAttributes(node.attributes(), d3.select("#classAttributes"));
-
-		setTextAndVisibility(d3.select("#nodeDescription"), node.descriptionForCurrentLanguage());
-		setTextAndVisibility(d3.select("#nodeComment"), node.commentForCurrentLanguage());
-
-		listAnnotations(d3.select("#classSelectionInformation"), node.annotations());
-	}
-
-	function showClassInformations() {
-		setSelectionInformationVisibility(true, false, false);
-	}
-
-	function listNodeArray(textSpan, nodes) {
-		var spanParent = d3.select(textSpan.node().parentNode);
-
-		if (nodes && nodes.length) {
-			textSpan.selectAll("*").remove();
-			nodes.forEach(function (element, index) {
-				if (index > 0) {
-					textSpan.append("span").text(", ");
-				}
-				appendIriLabel(textSpan, element.labelForCurrentLanguage(), element.iri());
-			});
-
-			spanParent.classed("hidden", false);
-		} else {
-			spanParent.classed("hidden", true);
-		}
-	}
-
-	function setTextAndVisibility(label, value) {
-		var parentNode = d3.select(label.node().parentNode);
-		var hasValue = !!value;
-		if (value) {
-			label.text(value);
-		}
-		parentNode.classed("hidden", !hasValue);
-	}
-
-
 
 
 	/** -----------------------------*/
 
-    //
-    // <tr>
-    // <td>Alfreds Futterkiste</td>
-    // <td>Maria Anders</td>
-    // <td>Germany</td>
-    // </tr>
-    // <tr>
-    // <td>Centro comercial Moctezuma</td>
-    // <td>Francisco Chang</td>
-    // <td>Mexico</td>
-    // </tr>
+
 	sidebar.updateEditInfo=function(node) {
         selectedNode=node;
         var editContainer = d3.select("#edit_DIV");
@@ -502,6 +99,24 @@ module.exports = function (graph) {
 
         table.appendChild(labelEntry);
 
+        var hoverEdit = document.createElement('input');
+        hoverEdit.type="text";
+        hoverEdit.id="NODE_HOVER_EDIT";
+        hoverEdit.placeholder="";
+        hoverEdit.value=node.hoverText();
+        hoverEdit.setAttribute("class", "lineEdit");
+
+        var hoverEntry=document.createElement('tr');
+        var hoverEntryLeft=document.createElement('td');
+        var hoverEntryRight=document.createElement('td');
+        hoverEntryLeft.innerHTML = "Hover Text"; // the Showing name in the graph.
+        hoverEntryRight.appendChild(hoverEdit);
+        hoverEntry.appendChild(hoverEntryLeft);
+        hoverEntry.appendChild(hoverEntryRight);
+
+        table.appendChild(hoverEntry);
+
+
 
         // get the parameters of the node;
 		var params=node.getParamaters();
@@ -536,34 +151,158 @@ module.exports = function (graph) {
         updateAllButton.setAttribute("class", "updateButtonDisabled");
         updateAllButton.onclick=function(){updateAllEntries()};
 
+        var removeNodeButton=document.createElement('a');
+        removeNodeButton.innerHTML="Remove";
+        removeNodeButton.id="removeNodeButton";
+        removeNodeButton.setAttribute("class", "removeButton");
+        removeNodeButton.onclick=function(){removeNode()};
+
         editContainer.node().appendChild(table);
         editContainer.node().appendChild(document.createElement('br'));
         editContainer.node().appendChild(updateAllButton);
+        editContainer.node().appendChild(removeNodeButton);
 
         //
         var trigger = d3.select("#edit_TRIGGER");
         trigger.classed("accordion-trigger-active", true);
         editContainer.classed("hidden", false);
 
-        // addint the connections to the elementes
+        // adding the connections to the elements
         d3.select("#NODE_LABEL_EDIT").on("keydown", userInput);
+        d3.select("#NODE_HOVER_EDIT").on("keydown", userInput);
         for ( i=0;i<params.length;i++) {
             var idString = "#paramId" + i;
             d3.select(idString).on("keydown", userInput);
         }
 
+        createPortsInfo();
+        var portsTrigger = d3.select("#port_TRIGGER");
+        var portContainer = d3.select("#port_DIV");
+        portsTrigger.classed("accordion-trigger-active", true);
+        portContainer.classed("hidden", false);
+
     };
+    function createPortsInfo(){
+        var editContainer = d3.select("#port_DIV");
+        var ports=selectedNode.getPortObjs();
+
+        // create table entry
+
+
+        for (var i=0;i<ports.length;i++){
+            var table= document.createElement('table');
+            var nameEntry=document.createElement('tr');
+            var nameEntryLeft=document.createElement('td');
+            var nameEntryRight=document.createElement('td');
+
+            nameEntryLeft.innerHTML = "Name ";
+            nameEntryRight.innerHTML= ports[i].labelForCurrentLanguage(); // the given name in the library
+            nameEntry.appendChild(nameEntryLeft);
+            nameEntry.appendChild(nameEntryRight);
+            table.appendChild(nameEntry);
+
+            var imgEntry=document.createElement('tr');
+            var imgEntryLeft=document.createElement('td');
+            var imgEntryRight=document.createElement('td');
+            var img=document.createElement('img');
+            img.setAttribute('src', ports[i].imageURL());
+            img.setAttribute('alt', 'na');
+            img.setAttribute('height', '40px');
+            img.setAttribute('width', '40px');
+            img.setAttribute('style',"background-color:white"); // just for now;
+            imgEntryLeft.innerHTML = "Image ";
+            imgEntryRight.appendChild(img);
+            imgEntry.appendChild(imgEntryLeft);
+            imgEntry.appendChild(imgEntryRight);
+            table.appendChild(imgEntry);
+
+
+            var hoverEdit = document.createElement('input');
+            hoverEdit.type="text";
+            hoverEdit.id="PORT_HOVER_EDIT"+i;
+            hoverEdit.placeholder="";
+            hoverEdit.value=ports[i].hoverText();
+            hoverEdit.setAttribute("class", "lineEdit");
+
+            var hoverEntry=document.createElement('tr');
+            var hoverEntryLeft=document.createElement('td');
+            var hoverEntryRight=document.createElement('td');
+            hoverEntryLeft.innerHTML = "Hover Text"; // the Showing name in the graph.
+            hoverEntryRight.appendChild(hoverEdit);
+            hoverEntry.appendChild(hoverEntryLeft);
+            hoverEntry.appendChild(hoverEntryRight);
+
+            table.appendChild(hoverEntry);
+            if (ports[i].portUsed()) {
+
+                var removeEntry = document.createElement('tr');
+                var removeEntryLeft = document.createElement('td');
+                var removeEntryRight = document.createElement('td');
+                removeEntryLeft.innerHTML = "Connection";
+                var removePortButton = document.createElement('a');
+                removePortButton.innerHTML = "Remove";
+                removePortButton.id = "portId " + i;
+                removePortButton.setAttribute("class", "removePortButton");
+                removePortButton.onclick = function () {
+                    removePort(removePortButton);
+                };
+                removeEntryRight.appendChild(removePortButton);
+                removeEntry.appendChild(removeEntryLeft);
+                removeEntry.appendChild(removeEntryRight);
+                table.appendChild(removeEntry);
+            }
+
+
+
+
+
+            editContainer.node().appendChild(table);
+            editContainer.node().appendChild(document.createElement('br'));
+		}
+
+        // add table
+	}
+
+	function removePort(sender){
+        var senderId=sender.id;
+        var temp=senderId.indexOf(" ");
+        var id=senderId.substr(temp,senderId.length);
+
+        var index=parseInt(id);
+        var node=selectedNode;
+
+        var port=node.getPortObjs()[index];
+        var other=port.connectedPorts();
+        graph.removeLinksBetweenPorts(other[0],port);
+
+        sidebar.updateEditInfo(node);
+        node.focused(false);
+        node.toggleFocus();
+
+        graph.removeLinkBetweenNodes(other[0].getParentNodeElement(),port.getParentNodeElement());
+
+   }
 
     function clearEditInfo(){
         var editContainer=d3.select("#edit_DIV");
         var  htmlCollection = editContainer.node().children;
         var numEntries = htmlCollection.length;
-        for (i = 0; i < numEntries; i++)
+        for (var i = 0; i < numEntries; i++)
             htmlCollection[0].remove();
+
+        var portsContainer=d3.select("#port_DIV");
+        var port_Trigger=d3.select("#port_TRIGGER");
+        var portHtmlCollection=portsContainer.node().children;
+        numEntries = portHtmlCollection.length;
+        for (i = 0; i < numEntries; i++)
+            portHtmlCollection[0].remove();
 
         var trigger=d3.select("#edit_TRIGGER");
         trigger.classed("accordion-trigger-active", false);
+        port_Trigger.classed("accordion-trigger-active", false);
+
         editContainer.classed("hidden", true);
+        portsContainer.classed("hidden", true);
     }
 
 	function userInput(){
@@ -574,11 +313,17 @@ module.exports = function (graph) {
         }
 	}
 
+	function removeNode(){
+		graph.removeNode(selectedNode);
 
+	}
 
 	function updateAllEntries(){
         var newLabel= d3.select("#NODE_LABEL_EDIT").node().value;
         selectedNode.label(newLabel);
+
+        var newHoverText=d3.select("#NODE_HOVER_EDIT").node().value;
+        selectedNode.hoverText(newHoverText);
 
         // update the parameters;
         var params=selectedNode.getParamaters();

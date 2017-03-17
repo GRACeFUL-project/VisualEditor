@@ -19,6 +19,11 @@ module.exports = function () {
             portNodeB.addFriendPort(portNodeA);
 		};
 
+		this.connectionExists=function(portA,portB){
+			if (portA===portNodeA && portB===portNodeB) return true;
+            if (portB===portNodeA && portA===portNodeB) return true;
+            return false;
+		};
 
 		/** Setter and getter ----------------------------------------------------------------------------------------*/
 		this.svgRoot = function (root) {

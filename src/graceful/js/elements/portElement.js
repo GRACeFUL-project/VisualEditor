@@ -24,6 +24,7 @@ module.exports = function () {
         var nodeElement;
         var rotationEnabled=false;
         var connections=[];
+        var connectedToNode=undefined;
         var portIsInUse=false;
 
         // node behaviour
@@ -36,6 +37,30 @@ module.exports = function () {
             label;
 
         var connectedPorts=[];
+
+        this.resetState=function(){
+            connectedToNode=undefined;
+            connections=[];
+            portIsInUse=false;
+            connectedPorts=[];
+        };
+
+
+        this.clearPortConnection=function(){
+            graph.removeLinksBetweenPorts(that,connectedPorts[0]);
+            connectedToNode=undefined;
+            connections=[];
+            portIsInUse=false;
+            connectedPorts=[];
+        };
+
+        this.connectedToNode=function(node){
+            connectedToNode=node;
+        };
+
+        this.getConnectedToNode=function(){
+            return connectedToNode;
+        };
 
         this.portUsed=function(val){
             if (!arguments.length) return portIsInUse;
@@ -175,7 +200,7 @@ module.exports = function () {
         };
 
         this.removeTempArrow=function(){
-         //   console.log("removing Temp Arrow Element");
+            console.log("removing Temp Arrow Element");
             if (tempArrowElement)
                 tempArrowElement.remove();
             tempArrowElement=undefined;
@@ -254,10 +279,8 @@ module.exports = function () {
 
         function dragOver(){
             portDrag =false;
-            // DEF.CL("calling dragOverASD");
-
             var other=graph.getTestObject();
-
+            if (!other) return;
             if (other.getParentNodeElement()!==that.getParentNodeElement()
             && other.elementType()===that.elementType()){
 
@@ -269,12 +292,15 @@ module.exports = function () {
                     graph.createLinkBetweenPorts(that, other);
                     connections.push(other.getParentNodeElement().id());
                     connections.push(other.label());
+                    that.connectedToNode(other.getParentNodeElement());
+                    other.connectedToNode(that);
                     that.portUsed(true);
                     other.portUsed(true);
                 }
 
             }
             graph.stopFollow();
+            graph.updateEditInfo(undefined);
         }
 
         this.setHoverHighlighting = function (enable) {
@@ -299,7 +325,7 @@ module.exports = function () {
 
 
         function onClicked() {
-          //  console.log("I was Clicked PORT: " + that.labelForCurrentLanguage());
+            console.log("I was Clicked PORT: " + that.labelForCurrentLanguage());
             if (d3.event.defaultPrevented) {
                 return;
             }

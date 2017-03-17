@@ -92,6 +92,51 @@ module.exports = function () {
             forceLinks.push(link);
         };
 
+        this.removeLink=function(linkElement){
+
+            var newLinks=[];
+            for (var i =0;i<forceLinks.length;i++){
+                if (forceLinks[i]===linkElement)
+                    continue;
+                newLinks.push(forceLinks[i]);
+            }
+            forceLinks=newLinks;
+        };
+        this.clearConnections=function(){
+            console.log("call clear connections");
+
+
+            // check the ports of this node
+            for (var i=0;i<portObjects.length;i++){
+                var port=portObjects[i];
+                var friendPort=port.connectedPorts();
+                console.log("Has Connections"+friendPort);
+                if (friendPort.length>0){
+                    var fPort=friendPort[0];
+                    console.log("Port="+portObjects[i]);
+                    console.log("FPort="+fPort);
+                    console.log("removeing connection of "+port.labelForCurrentLanguage()+" and "+fPort.labelForCurrentLanguage());
+                    graph.removeLinksBetweenPorts(port,fPort);
+                }
+            }
+
+
+            // get my links
+            for (i =0;i<forceLinks.length;i++){
+                if (forceLinks[i].range()===that){
+                    console.log("remove the link in the domain!");
+                    forceLinks[i].domain().removeLink(forceLinks[i]);
+                }
+            }
+
+
+
+
+
+
+
+
+        };
         this.hoverText=function(text){
 			if (!arguments.length) return hoverText;
             hoverText=text;

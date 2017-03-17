@@ -219,7 +219,6 @@ module.exports = function (graphContainerSelector) {
 
     graph.createNewInstanceNode=function(nodeType){
         var node=new nodeElement(graph);
-        var classId=nodeType.id();
         node.id(cI);
         node.deepCopy(nodeType);
         node.elementType("INSTANCE");
@@ -229,7 +228,25 @@ module.exports = function (graphContainerSelector) {
         redrawContent();
 	};
 
-	graph.addRoundNode=function(){
+    graph.removeNode=function(node2Remove){
+        console.log("removing that node "+node2Remove.labelForCurrentLanguage());
+        // find this node in the instance container;
+        todo: node2Remove.clearConnections();
+		var newArray=[];
+        for (var i=0;i<instance_container.length;i++){
+        	if (instance_container[i]===node2Remove)
+        		continue;
+        	newArray.push(instance_container[i]);
+		}
+        instance_container=newArray;
+        updateForceNodes();
+        redrawContent();
+        graph.options().sidebar().updateEditInfo(undefined);
+
+    };
+
+
+    graph.addRoundNode=function(){
 	//	console.log("requesting a new  ROUND node");
 		// create new node element
 		var node=new nodeElement(graph);
@@ -527,6 +544,20 @@ module.exports = function (graphContainerSelector) {
 		//graph.getMousePositionInGraph();
    	};
 
+    graph.removeLinksBetweenPorts=function(portA,portB) {
+
+    	var newPorts=[];
+    	for (var i=0;i<port_linkContainer.length;i++){
+    		if (port_linkContainer[i].connectionExists(portA,portB)) {
+    			portA.resetState();
+                portB.resetState();
+                continue;
+            }
+    		newPorts.push(port_linkContainer[i]);
+		}
+    	port_linkContainer=newPorts;
+		redrawContent();
+    };
     graph.createLinkBetweenPorts=function(portA,portB){
 
 		// todo : check if already exists;
@@ -541,6 +572,57 @@ module.exports = function (graphContainerSelector) {
 
 	};
 
+    graph.removeLinkBetweenNodes=function(nodeA,nodeB){
+    	console.log("remove links between nodes if necessary");
+		console.log("nodeA "+nodeA.labelForCurrentLanguage());
+        console.log("nodeB "+nodeB.labelForCurrentLanguage());
+
+        var linkElement=undefined;
+        var sLinks=nodeA.getLinkElements();
+        var eLinks=nodeB.getLinkElements();
+
+        var i,aLink;
+        for (i=0;i<sLinks.length;i++){
+        	aLink=sLinks[i];
+        	if (aLink.domain()===nodeA && aLink.range()===nodeB) linkElement=aLink;
+            if (aLink.domain()===nodeB && aLink.range()===nodeA) linkElement=aLink;
+		}
+        for (i=0;i<eLinks.length;i++){
+            aLink=eLinks[i];
+            if (aLink.domain()===nodeA && aLink.range()===nodeB) linkElement=aLink;
+            if (aLink.domain()===nodeB && aLink.range()===nodeA) linkElement=aLink;
+        }
+        // now we have identified the link element.
+
+
+		// the link is inside linkeElement.domain();
+
+		// now check if the link is still used
+
+		var linkIsUsedInDom=false;
+        var linkIsUsedInRan=false;
+
+        var domPorts=linkElement.domain().getPortObjs();
+        for (i=0;i<domPorts.length;i++){
+        	if(domPorts[i].getConnectedToNode()===linkElement.range())
+        		linkIsUsedInDom=true;
+		}
+        var ranPorts=linkElement.range().getPortObjs();
+        for (i=0;i<ranPorts.length;i++){
+            if(ranPorts[i].getConnectedToNode()===linkElement.domain())
+                linkIsUsedInRan=true;
+        }
+
+        if (linkIsUsedInDom===false && linkIsUsedInRan===false){
+        	// we can remove the force link;
+			var domainObj=linkElement.domain();
+			domainObj.removeLink(linkElement);
+			updateForceNodes();
+			redrawContent();
+		}
+
+
+    };
     graph.createLinkBetweenNodes=function(startNode,endNode){
     	console.log("generating link between "+startNode.labelForCurrentLanguage()+"->"+endNode.labelForCurrentLanguage());
 
@@ -588,15 +670,19 @@ module.exports = function (graphContainerSelector) {
 	};
     graph.stopFollow=function () {
     	if (followNodeElement) {
-            console.log("Stop follow, and remove node" + followNodeElement);
+            // console.log("Stop follow, and remove node" + followNodeElement);
             masterContainer.on("mousemove", function () {
             });
-            testObj.removeTempArrow();
-            followNodeElement = false;
-            testObj=null;
+            if (testObj) {
+                testObj.removeTempArrow();
+                followNodeElement = false;
+                testObj = null;
+            }
         }
 
     };
+
+
     // The magic function - converts node positions into positions on screen.
         function getScreenCoords(x, y, translate, scale) {
         var xn=(x-translate[0])/scale;
