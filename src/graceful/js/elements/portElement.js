@@ -24,6 +24,7 @@ module.exports = function () {
         var nodeElement;
         var rotationEnabled=false;
         var connections=[];
+        var portIsInUse=false;
 
         // node behaviour
         var id,
@@ -35,6 +36,11 @@ module.exports = function () {
             label;
 
         var connectedPorts=[];
+
+        this.portUsed=function(val){
+            if (!arguments.length) return portIsInUse;
+            portIsInUse=val;
+        };
 
         this.getConnections=function(){
             return connections;
@@ -181,8 +187,10 @@ module.exports = function () {
         };
 
         function dragStart(){
+
             d3.event.stopImmediatePropagation();
             d3.event.preventDefault();
+            if (portIsInUse===true) return;
             portDrag=true;
             // DEF.CL("Prevented default? "+ d3.event.defaultPrevented);
 
@@ -253,39 +261,21 @@ module.exports = function () {
             if (other.getParentNodeElement()!==that.getParentNodeElement()
             && other.elementType()===that.elementType()){
 
-                graph.createLinkBetweenNodes(that.getParentNodeElement(),other.getParentNodeElement());
-                graph.createLinkBetweenPorts(that,other);
 
-                // add information about the connection for the output;
+                // check if a port connection exists;
+                if (that.portUsed()===false && other.portUsed()===false) {
 
-                // currently only one connecion per port; allowed;
-                connections.push(other.getParentNodeElement().id());
-                connections.push(other.label());
-              //  console.log("THe Connections: "+connections);
-
+                    graph.createLinkBetweenNodes(that.getParentNodeElement(), other.getParentNodeElement());
+                    graph.createLinkBetweenPorts(that, other);
+                    connections.push(other.getParentNodeElement().id());
+                    connections.push(other.label());
+                    that.portUsed(true);
+                    other.portUsed(true);
+                }
 
             }
-
             graph.stopFollow();
-
-
         }
-        function draging(){
-            if (portDrag===false)return;
-
-            // talk with the graph to detect the actual position in the screen depending on graph;
-            graph.followObject(tempArrowElement);
-
-
-
-            // tempArrowElement.attr("cx",  )
-            //     .attr("cy", d3.event.offsetY )
-
-
-
-        }
-
-
 
         this.setHoverHighlighting = function (enable) {
           //  console.log("Enable Hover"+ enable);
@@ -326,13 +316,15 @@ module.exports = function () {
             if (graph.connectionMode()){
                 // check if we allow the connection;
                 var otherPort=graph.getTestObject();
+                console.log("that="+that.labelForCurrentLanguage()+" "+otherPort.labelForCurrentLanguage());
 				hoverPrimitive.style("fill","#f00");
                 if  (otherPort.getParentNodeElement()===that.getParentNodeElement()){
 					hoverPrimitive.style("fill","#f00");
+                    hoverPrimitive.classed("hidden",false);
 					return;
                 }
 
-				if  (otherPort.elementType()===that.elementType())
+				if  ((otherPort.elementType()===that.elementType())&& (otherPort.portUsed()===false && that.portUsed()===false))
 					hoverPrimitive.style("fill","#0f0");
 
 			} else
