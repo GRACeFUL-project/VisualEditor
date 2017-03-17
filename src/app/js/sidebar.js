@@ -450,19 +450,39 @@ module.exports = function (graph) {
 
 	/** -----------------------------*/
 
+    //
+    // <tr>
+    // <td>Alfreds Futterkiste</td>
+    // <td>Maria Anders</td>
+    // <td>Germany</td>
+    // </tr>
+    // <tr>
+    // <td>Centro comercial Moctezuma</td>
+    // <td>Francisco Chang</td>
+    // <td>Mexico</td>
+    // </tr>
 	sidebar.updateEditInfo=function(node) {
         selectedNode=node;
         var editContainer = d3.select("#edit_DIV");
         clearEditInfo();
-
+		if (selectedNode===undefined) return;
         // add name of the node
-        var nodesName = document.createElement('h5');
-        nodesName.innerHTML = "Name : " + node.nameValue(); // the given name in the library
-        editContainer.node().appendChild(nodesName);
+
+		// create table
+        var table= document.createElement('table');
+		// create table entry
+        var nameEntry=document.createElement('tr');
+        var nameEntryLeft=document.createElement('td');
+        var nameEntryRight=document.createElement('td');
 
 
-        var labelDiv = document.createElement('div');
-        var LabelText = document.createElement('h5');
+        nameEntryLeft.innerHTML = "Name ";
+        nameEntryRight.innerHTML= node.nameValue(); // the given name in the library
+		nameEntry.appendChild(nameEntryLeft);
+        nameEntry.appendChild(nameEntryRight);
+        table.appendChild(nameEntry);
+
+
         var LabelEdit = document.createElement('input');
         LabelEdit.type="text";
         LabelEdit.id="NODE_LABEL_EDIT";
@@ -470,45 +490,68 @@ module.exports = function (graph) {
         LabelEdit.value=node.labelForCurrentLanguage();
         LabelEdit.setAttribute("class", "lineEdit");
 
-        // add the edit input LineEdit
 
-        LabelText.innerHTML = "Label : "; // the Showing name in the graph.
-		labelDiv.appendChild(LabelText);
-        LabelText.appendChild(LabelEdit);
-        editContainer.node().appendChild(labelDiv);
+// create table entry
+        var labelEntry=document.createElement('tr');
+        var labelEntryLeft=document.createElement('td');
+        var labelEntryRight=document.createElement('td');
+        labelEntryLeft.innerHTML = "Label "; // the Showing name in the graph.
+        labelEntryRight.appendChild(LabelEdit);
+        labelEntry.appendChild(labelEntryLeft);
+        labelEntry.appendChild(labelEntryRight);
 
-        d3.select("#NODE_LABEL_EDIT").on("keydown", userInput);
+        table.appendChild(labelEntry);
 
 
         // get the parameters of the node;
 		var params=node.getParamaters();
 		for (var i=0;i<params.length;i++){
-            var paramDiv = document.createElement('div');
-            var paramText = document.createElement('h5');
+            var paramEntry=document.createElement('tr');
+            var paramEntryLeft=document.createElement('td');
+            var paramEntryRight=document.createElement('td');
+
+
+
             var paramEdit = document.createElement('input');
             paramEdit.type="text";
             paramEdit.id="paramId"+i;
             paramEdit.placeholder="";
             paramEdit.value=params[i].value;
             paramEdit.setAttribute("class", "lineEdit");
-			paramEdit.innerHTML="("+params[i].type+")";
-            // add the edit input LineEdit
 
-            paramText.innerHTML = params[i].name+"("+params[i].type+") : "; // the Showing name in the graph.
-            paramDiv.appendChild(paramText);
-            paramText.appendChild(paramEdit);
-            editContainer.node().appendChild(paramDiv);
-            var idString="#paramId"+i;
-            d3.select(idString).on("keydown", userInput);
+            paramEntryLeft.innerHTML = params[i].name+"<br>("+params[i].type+")"; // the Showing name in the graph.
+            paramEntryRight.appendChild(paramEdit);
+            paramEntry.appendChild(paramEntryLeft);
+            paramEntry.appendChild(paramEntryRight);
+
+            table.appendChild(paramEntry);
+
 		}
 
-        //
+        // add all update button;
 
+        var updateAllButton=document.createElement('a');
+        updateAllButton.innerHTML="Update All Entries";
+        updateAllButton.id="updateAllButton";
+        updateAllButton.setAttribute("class", "updateButtonDisabled");
+        updateAllButton.onclick=function(){updateAllEntries()};
+
+        editContainer.node().appendChild(table);
+        editContainer.node().appendChild(document.createElement('br'));
+        editContainer.node().appendChild(updateAllButton);
 
         //
         var trigger = d3.select("#edit_TRIGGER");
         trigger.classed("accordion-trigger-active", true);
         editContainer.classed("hidden", false);
+
+        // addint the connections to the elementes
+        d3.select("#NODE_LABEL_EDIT").on("keydown", userInput);
+        for ( i=0;i<params.length;i++) {
+            var idString = "#paramId" + i;
+            d3.select(idString).on("keydown", userInput);
+        }
+
     };
 
     function clearEditInfo(){
@@ -524,27 +567,41 @@ module.exports = function (graph) {
     }
 
 	function userInput(){
-
+        var bt= d3.select("#updateAllButton").node();
+        bt.setAttribute("class", "updateButton");
         if (d3.event.keyCode === 13) {
-        	console.log("Enter Was Pressed");
-        	var newLabel= d3.select("#NODE_LABEL_EDIT").node().value;
-			selectedNode.label(newLabel);
-
-			// update the parameters;
-            var params=selectedNode.getParamaters();
-            for (var i=0;i<params.length;i++){
-                 var valueId="paramId"+i;
-                 var newvalue= d3.select("#"+valueId).node().value;
-                 params[i].value=newvalue;
-            }
-
-            graph.update();
-			selectedNode.setFocusedHighlight();
+            updateAllEntries();
         }
 	}
 
 
 
+	function updateAllEntries(){
+        var newLabel= d3.select("#NODE_LABEL_EDIT").node().value;
+        selectedNode.label(newLabel);
+
+        // update the parameters;
+        var params=selectedNode.getParamaters();
+        for (var i=0;i<params.length;i++){
+            var valueId="paramId"+i;
+            var newValue= d3.select("#"+valueId).node().value;
+            var valueType=params[i].type;
+            if (valueType.toLowerCase()==="float"){
+                newValue=parseFloat(newValue);
+			}
+			if (valueType.toLowerCase()==="int" ||valueType.toLowerCase()==="integer"){
+                newValue=parseInt(newValue);
+			}
+
+            params[i].value=newValue;
+        }
+
+        graph.update();
+        selectedNode.setFocusedHighlight();
+        var bt= d3.select("#updateAllButton").node();
+        bt.setAttribute("class", "updateButtonDisabled");
+
+	}
 
 
     return sidebar;

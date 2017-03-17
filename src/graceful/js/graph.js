@@ -37,12 +37,29 @@ module.exports = function (graphContainerSelector) {
 		inputJsonText,
         inputParser= require("./inputParser")(graph),
 		classNodes,
+		lastSelectedNode=undefined,
 		zoom;
 
 
     graph.updateEditInfo=function(node){
     	// get edit population
 		graph.options().sidebar().updateEditInfo(node);
+		if (lastSelectedNode===undefined){
+			lastSelectedNode=node;
+			return;
+		}
+        if (lastSelectedNode===node){
+            lastSelectedNode=undefined;
+            graph.options().sidebar().updateEditInfo(undefined);
+			return;
+		}
+
+
+		console.log("removing last node highlight");
+		lastSelectedNode.focused(true);
+		lastSelectedNode.toggleFocus();
+		lastSelectedNode=node;
+
 
 	};
 
@@ -57,7 +74,7 @@ module.exports = function (graphContainerSelector) {
 			{
 				var tempNodeOBJ={};
 				var node=instance_container[i];
-				tempNodeOBJ.name       = node.label();
+				tempNodeOBJ.name       = node.nameValue();
 //                tempNodeOBJ.imgURL     = node.imageURL();
 //                tempNodeOBJ.hoverText  = node.hoverText();
 				tempNodeOBJ.parameters = [];
@@ -75,10 +92,12 @@ module.exports = function (graphContainerSelector) {
                     // tempPort.hoverText=node.getPortObjs()[j].hoverText();
                     // tempPort.imgURL=node.getPortObjs()[j].imageURL();
                     // tempPort.rotation=node.getPortObjs()[j].rotationEnabled();
-                    tempPort.connection=[];
                     var con=node.getPortObjs()[j].getConnections();
-                    for (var c=0;c<con.length;c++)
-                        tempPort.connection.push(con[c]);
+					if (con.length>0) {
+                        tempPort.connection = [];
+                        for (var c = 0; c < con.length; c++)
+                            tempPort.connection.push(con[c]);
+                    }
                     tempNodeOBJ.interface.push(tempPort);
 				}
                 exportObj.nodes.push(tempNodeOBJ);
