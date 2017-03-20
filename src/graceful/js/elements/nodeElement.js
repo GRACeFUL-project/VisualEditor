@@ -192,9 +192,21 @@ module.exports = function () {
             // only update me
             svgRoot.attr("transform", "translate(" + that.x + "," + that.y + ")");
             // for each port object compute optiomal location;
+            var high=[];
+            var low=[];
+            var occupied_Pos=[];
+            var i;
+            var aPort;
+            for (i =0;i<portObjects.length;i++) {
+                if (portObjects[i].portUsed()){
+                    high.push(portObjects[i]);
+                }else {
+                    low.push(portObjects[i]);
+                }
+            }
 
-            for (var i =0;i<portObjects.length;i++){
-                var aPort=portObjects[i];
+            for (var i=0;i<high.length;i++){
+                aPort=high[i];
                 var friends=aPort.connectedPorts();
                 if (friends.length>0) {
                     var dirx = 0;
@@ -203,35 +215,126 @@ module.exports = function () {
                         dirx = dirx + (friends[j].getParentNodeElement().x - this.x);
                         diry = diry + (friends[j].getParentNodeElement().y - this.y);
                     }
-                    // normalize vector;
-                    var length = Math.sqrt(dirx * dirx + diry * diry);
-                    var nX = dirx / length;
-                    var nY = diry / length;
-                   // console.log(aPort.x + " " + aPort.y + "->" + that.radius() * nX + " " + that.radius() * nY);
+                }
+                //var dirx = (aPort.getConnectedToNode().x - this.x);
+                //var diry = (aPort.getConnectedToNode().x - this.y);
+                // normalize vector;
+                var length = Math.sqrt(dirx * dirx + diry * diry);
+                var nX = dirx / length;
+                var nY = diry / length;
+                var angle=Math.atan2(-nY,nX)* (180 / Math.PI);
+                if (angle<0)
+                    angle=angle+360;
+
+                // check if position already set
+                var wPos=0;
+                if (angle>360-22.5 && angle<22.5 ) wPos=0;
+                if (angle>22.5 && angle<22.5+45 ) wPos=1;
+                if (angle>22.5+45 && angle<22.5+2*45 ) wPos=2;
+                if (angle>22.5+2*45 && angle<22.5+3*45 ) wPos=3;
+                if (angle>22.5+3*45 && angle<22.5+4*45 ) wPos=4;
+                if (angle>22.5+4*45 && angle<22.5+5*45 ) wPos=5;
+                if (angle>22.5+5*45 && angle<22.5+6*45 ) wPos=6;
+                if (angle>22.5+6*45 && angle<22.5+7*45 ) wPos=7;
+
+                if (occupied_Pos.indexOf(wPos)===-1) {
                     aPort.x=that.radius()*nX;
                     aPort.y=that.radius()*nY;
                     aPort.updateRendering();
-                }
-            }
-            // check for conflicts!
-            if (portObjects.length>1){
-                // only if we have more than one portobject we can check for conflicks
-                var conflicts=false;
-                for(i=1;i<portObjects.length;i++){
-                    if (checkPortDistance(portObjects[0],portObjects[i])) {
-                        conflicts = true;
-                        break;
+                    occupied_Pos.push(wPos);
+                }else{
+                    var nearPos=(wPos+1)%8;
+                    var nearNeg=(wPos+7)%8;
+                    var nV;
+
+
+                    if (occupied_Pos.indexOf(nearPos)===-1 && occupied_Pos.indexOf(nearNeg)!==-1){
+                        nV=angleToNormedVec(45*nearPos);
+                        aPort.x=that.radius()*nV.x;
+                        aPort.y=that.radius()*nV.y;
+                        occupied_Pos.push(nearPos);
+
                     }
-                }
-                if (conflicts===true){
-
-                    // optimize the layout!
-                    //portObjects[0] stays fixed;
-                    
-
-
+                    if (occupied_Pos.indexOf(nearPos)!==-1 && occupied_Pos.indexOf(nearNeg)===-1){
+                        nV=angleToNormedVec(45*nearNeg);
+                        aPort.x=that.radius()*nV.x;
+                        aPort.y=that.radius()*nV.y;
+                        occupied_Pos.push(nearNeg);
+                    }
+                    if (occupied_Pos.indexOf(nearPos)===-1 && occupied_Pos.indexOf(nearNeg)===-1){
+                        nV=angleToNormedVec(45*nearPos);
+                        aPort.x=that.radius()*nV.x;
+                        aPort.y=that.radius()*nV.y;
+                        occupied_Pos.push(nearPos);
+                    }
+                    aPort.updateRendering();
                 }
             }
+            for (i=0;i<low.length;i++){
+                var aPort=low[i];
+                var posSet=false;
+                for (var p=0;p<8;p++){
+                    if (posSet===true){ continue;}
+                    if (occupied_Pos.indexOf(p)!==-1) {continue;}
+                    var nV=angleToNormedVec(45*p);
+                    aPort.x=that.radius()*nV.x;
+                    aPort.y=that.radius()*nV.y;
+                    occupied_Pos.push(p);
+                    posSet=true;
+                }
+                aPort.updateRendering();
+            }
+            //
+            // for (var i =0;i<portObjects.length;i++){
+            //     var aPort=portObjects[i];
+            //     var friends=aPort.connectedPorts();
+            //     if (friends.length>0) {
+            //         var dirx = 0;
+            //         var diry = 0;
+            //         for (var j = 0; j < friends.length; j++) {
+            //             dirx = dirx + (friends[j].getParentNodeElement().x - this.x);
+            //             diry = diry + (friends[j].getParentNodeElement().y - this.y);
+            //         }
+            //         // normalize vector;
+            //         var length = Math.sqrt(dirx * dirx + diry * diry);
+            //         var nX = dirx / length;
+            //         var nY = diry / length;
+            //        // console.log(aPort.x + " " + aPort.y + "->" + that.radius() * nX + " " + that.radius() * nY);
+            //
+            //
+            //
+            //         var angle=Math.atan2(-nY,nX)* (180 / Math.PI);
+            //         if (angle<0)
+            //             angle=angle+360;
+            //
+            //
+            //         // check if position already set
+            //         var wPos=0;
+            //         if (angle>360-22.5 && angle<22.5 ) wPos=0;
+            //         if (angle>22.5+0*45 && angle<22.5+1*45 ) wPos=1;
+            //         if (angle>22.5+1*45 && angle<22.5+2*45 ) wPos=2;
+            //         if (angle>22.5+2*45 && angle<22.5+3*45 ) wPos=3;
+            //         if (angle>22.5+3*45 && angle<22.5+4*45 ) wPos=4;
+            //         if (angle>22.5+4*45 && angle<22.5+5*45 ) wPos=5;
+            //         if (angle>22.5+5*45 && angle<22.5+6*45 ) wPos=6;
+            //         if (angle>22.5+6*45 && angle<22.5+7*45 ) wPos=7;
+            //
+            //         console.log(that.labelForCurrentLanguage()+" Wheel pos=" + wPos);
+            //
+            //
+            //
+            //
+            //         aPort.x=that.radius()*nX;
+            //         aPort.y=that.radius()*nY;
+            //
+            //         // console.log(that.labelForCurrentLanguage()+"Angle="+angle+ "n="+nX+" "+-nY+" atan2"+Math.atan2(-nY,nX));
+            //
+            //
+            //
+            //         aPort.updateRendering();
+            //     }
+            // }
+
 
         };
 
@@ -363,9 +466,12 @@ module.exports = function () {
 
         function angleToNormedVec(angle){
             // angle in degree;
-            var xn=Math.cos(angle);
-            var yn=Math.sin(angle);
-            return {x: xn, y: yn}
+
+
+
+            var xn=Math.cos(angle*Math.PI/180);
+            var yn=Math.sin(angle*Math.PI/180);
+            return {x: xn, y: -yn}
 
 
         }
