@@ -284,78 +284,7 @@ module.exports = function () {
                 }
                 aPort.updateRendering();
             }
-            //
-            // for (var i =0;i<portObjects.length;i++){
-            //     var aPort=portObjects[i];
-            //     var friends=aPort.connectedPorts();
-            //     if (friends.length>0) {
-            //         var dirx = 0;
-            //         var diry = 0;
-            //         for (var j = 0; j < friends.length; j++) {
-            //             dirx = dirx + (friends[j].getParentNodeElement().x - this.x);
-            //             diry = diry + (friends[j].getParentNodeElement().y - this.y);
-            //         }
-            //         // normalize vector;
-            //         var length = Math.sqrt(dirx * dirx + diry * diry);
-            //         var nX = dirx / length;
-            //         var nY = diry / length;
-            //        // console.log(aPort.x + " " + aPort.y + "->" + that.radius() * nX + " " + that.radius() * nY);
-            //
-            //
-            //
-            //         var angle=Math.atan2(-nY,nX)* (180 / Math.PI);
-            //         if (angle<0)
-            //             angle=angle+360;
-            //
-            //
-            //         // check if position already set
-            //         var wPos=0;
-            //         if (angle>360-22.5 && angle<22.5 ) wPos=0;
-            //         if (angle>22.5+0*45 && angle<22.5+1*45 ) wPos=1;
-            //         if (angle>22.5+1*45 && angle<22.5+2*45 ) wPos=2;
-            //         if (angle>22.5+2*45 && angle<22.5+3*45 ) wPos=3;
-            //         if (angle>22.5+3*45 && angle<22.5+4*45 ) wPos=4;
-            //         if (angle>22.5+4*45 && angle<22.5+5*45 ) wPos=5;
-            //         if (angle>22.5+5*45 && angle<22.5+6*45 ) wPos=6;
-            //         if (angle>22.5+6*45 && angle<22.5+7*45 ) wPos=7;
-            //
-            //         console.log(that.labelForCurrentLanguage()+" Wheel pos=" + wPos);
-            //
-            //
-            //
-            //
-            //         aPort.x=that.radius()*nX;
-            //         aPort.y=that.radius()*nY;
-            //
-            //         // console.log(that.labelForCurrentLanguage()+"Angle="+angle+ "n="+nX+" "+-nY+" atan2"+Math.atan2(-nY,nX));
-            //
-            //
-            //
-            //         aPort.updateRendering();
-            //     }
-            // }
-
-
         };
-
-        function checkPortDistance(elementA,elementB){
-            var conflict=false;
-
-            var aX=elementA.x;
-            var aY=elementA.y;
-            var bX=elementB.x;
-            var bY=elementB.y;
-
-
-            var distx=aX-bX;
-            var disty=aY-bY;
-            var length=Math.sqrt(distx*distx+disty*disty);
-
-            if (length<elementA.radius())
-                conflict=true;
-
-            return conflict;
-        }
 
         this.svgRoot=function(root){
             if (!arguments.length) return svgRoot;
@@ -415,22 +344,16 @@ module.exports = function () {
 
 
         this.drawPortElements=function(){
-          //  DEF.CL("want to draw ports info "+portObjects.length);
-
-            var portPositions=getPrecomputedPortPositions();
-
             for (var i=0;i<portObjects.length;i++){
-
-                portObjects[i].x=that.radius()*portPositions[i].x;
-                portObjects[i].y=that.radius()*portPositions[i].y;
-           //    DEF.CL("Port "+i+ "POS:"+xOffset+" "+yOffset );
+                var nV=angleToNormedVec(45*i);
+                portObjects[i].x=that.radius()*nV.x;
+                portObjects[i].y=that.radius()*nV.y;
                 nodeDrawTools.drawPortElement(that,portObjects[i]);
                if (that.elementType()==="INSTANCE"){
                    portObjects[i].allowHover(true);
                }else
                     portObjects[i].addConnectionsToNodeElement();
                 portObjects[i].updateRendering();
-
             }
 
         };
@@ -441,44 +364,14 @@ module.exports = function () {
             return this;
         };
 
-
-        function getPrecomputedPortPositions(){
-            var angularValues=[];
-            if (portObjects.length===1){
-                angularValues.push(0);
-            }
-            if (portObjects.length===2){
-                angularValues.push(45);
-                angularValues.push(-45);
-            }
-            if (portObjects.length===3){
-                angularValues.push(45);
-                angularValues.push(0);
-                angularValues.push(-45);
-            }
-            var vectors=[];
-            for (var i=0;i<angularValues.length;i++){
-                vectors.push(angleToNormedVec(angularValues[i]));
-            }
-            return vectors;
-        }
-
-
         function angleToNormedVec(angle){
-            // angle in degree;
-
-
-
+            // angle given in degree , need rad for cos and sin
             var xn=Math.cos(angle*Math.PI/180);
             var yn=Math.sin(angle*Math.PI/180);
             return {x: xn, y: -yn}
-
-
         }
 
         this.addConnectionsToNodeElement=function(el){
-
-
             if(RENDER_AS_IMAGE===true){
                 nodeRoot.on("mouseover", function () {onImageHover() ;});
                 nodeRoot.on("mouseout" , function () {outImageHover();});
@@ -489,12 +382,9 @@ module.exports = function () {
                     .on("mouseout", onMouseOut)
                     .on("click", onClicked);
             }
-
         };
 
-
         function onClicked() {
-          //  console.log("I was Clicked: " + that.labelForCurrentLanguage());
             if (d3.event.defaultPrevented) {
                 return;
             }
@@ -511,10 +401,8 @@ module.exports = function () {
 
         function onImageHover(){
             if (that.mouseEntered()) {
-                //	titleElement.classed("hidden",false);
                 return;
             }
-         //   console.log("hoverred over image"+that.labelForCurrentLanguage());
             that.mouseEntered(true);
             hoverPrimitive.classed("hidden",false);
 
@@ -539,10 +427,8 @@ module.exports = function () {
         }
 
         this.setHoverHighlighting = function (enable) {
-        //    console.log("Enable Hover"+ enable);
             nodeElement.classed("hovered", enable);
         };
-
 
 // COPY CONSTRUCTORS
 

@@ -98,20 +98,16 @@ module.exports = function () {
 
         this.updateRendering=function(){
             // only update me
-            if (HOVERING_ENABLED===false)
+            if (rotationEnabled===true) {
+                var angle=Math.atan2(that.y,that.x)* (180 / Math.PI);
+                var image=svgRoot.select("image");
+
+                image.attr("transform", "rotate("+angle+")");
                 svgRoot.attr("transform", "translate(" + that.x + "," + that.y + ")");
-            else{
-
-                if (rotationEnabled===true) {
-                    var angle=Math.atan2(that.y,that.x)* (180 / Math.PI);
-                    var image=svgRoot.select("image");
-
-                    image.attr("transform", "rotate("+angle+")");
-                    svgRoot.attr("transform", "translate(" + that.x + "," + that.y + ")");
-                }
-                else
-                    svgRoot.attr("transform", "translate(" + that.x + "," + that.y + ")");
             }
+            else
+                svgRoot.attr("transform", "translate(" + that.x + "," + that.y + ")");
+
         };
 
         this.setParentNodeElement=function(parent){
