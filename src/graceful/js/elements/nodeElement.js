@@ -18,6 +18,7 @@ module.exports = function () {
             hoverPrimitive=null,
             nodeRoot,
             portsRoot,
+            zoomFactor=1.0,
             svgRoot;
 
 
@@ -177,6 +178,16 @@ module.exports = function () {
         };
 
 // rendering functions
+
+        this.zoomFactor=function(val){
+            zoomFactor=val;
+        };
+
+        this.updateScaleFactor=function(){
+            // console.log("transform", "translate(" + that.x + "," + that.y + ")scale("+zoomFactor+")");
+            svgRoot.attr("transform", "translate(" + that.x + "," + that.y + ")scale("+zoomFactor+")");
+        };
+
         this.updateRendering=function(){
             // only update me
             svgRoot.attr("transform", "translate(" + that.x + "," + that.y + ")");

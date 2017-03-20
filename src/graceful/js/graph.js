@@ -38,7 +38,16 @@ module.exports = function (graphContainerSelector) {
         inputParser= require("./inputParser")(graph),
 		classNodes,
 		lastSelectedNode=undefined,
-		zoom;
+		zoom,
+// Library ControlElements
+		libraryZoomFactor=1.0,
+		controlHoverElement,
+		libraryUp,
+		libraryDown,
+		libraryZoomIn,
+		controlsEntered=false,
+        libraryStartIndex=0,
+		libraryZoomOut;
 
 
     graph.updateEditInfo=function(node){
@@ -112,6 +121,7 @@ module.exports = function (graphContainerSelector) {
 	};
 	graph.getTestObject=function(){ return testObj;};
 	graph.setJSONInputText=function(txt){
+		graph.clearGraphData();
 		inputJsonText=txt;
 
 		classNodes=inputParser.parse(inputJsonText);
@@ -361,7 +371,217 @@ module.exports = function (graphContainerSelector) {
 	 * removes data when data could not be loaded
 	 */
 	graph.clearGraphData=function(){
+		console.log("removing data");
+		classNodes=[];
+		instance_container=[];
+        port_linkContainer=[];
+        controlHoverElement=undefined;
+        controlsEntered=false;
+        cI=0;
+        updateForceNodes();
+        redrawGraph();
 	};
+
+	function libraryControlElements(){
+
+        // create via node things;
+		var layerUpContainer=fixedNodeContainer.append('g');
+        var layerDownContainer=fixedNodeContainer.append('g');
+        var layerZoomInContainer=fixedNodeContainer.append('g');
+        var layerZoomOutContainer=fixedNodeContainer.append('g');
+
+		libraryUp=layerUpContainer.append('image')
+            .attr("x", 10)
+            .attr("y", 150)
+            .attr("width", 30)
+            .attr("height", 30)
+            .attr("xlink:href",'./data/img/controlUp.png');
+
+        libraryDown=layerDownContainer.append('image')
+            .attr("x", 45)
+            .attr("y", 150)
+            .attr("width", 30)
+            .attr("height", 30)
+            .attr("xlink:href",'./data/img/controlDown.png');
+
+        libraryZoomIn=layerZoomInContainer.append('image')
+            .attr("x", 80)
+            .attr("y", 150)
+            .attr("width", 30)
+            .attr("height", 30)
+            .attr("xlink:href",'./data/img/controlZoom.png');
+
+        libraryZoomOut=layerZoomOutContainer.append('image')
+            .attr("x", 115)
+            .attr("y", 150)
+            .attr("width", 30)
+            .attr("height", 30)
+            .attr("xlink:href",'./data/img/controlZoomOut.png');
+
+
+
+        // library Up
+        layerUpContainer.on("mouseover", function(){
+            // create
+            if (controlsEntered===true) {
+                controlHoverElement.classed("hidden",false);
+                return;
+            }
+            if (controlHoverElement===undefined && controlsEntered===false) {
+                controlsEntered=true;
+				controlHoverElement=layerUpContainer.append('rect')
+					.attr("x", 10)
+					.attr("y", 150)
+					.attr("width", 30)
+					.attr("height", 30)
+					.classed("hoverImage", true);
+				controlHoverElement.on("click",function(){
+					// console.log("layer Up was clicked");
+					library_Up();
+				});
+                controlHoverElement.on("mouseout", function(){
+                    controlHoverElement.classed("hidden",true);
+                    controlHoverElement.remove();
+                    controlHoverElement=undefined;
+                    controlsEntered=false;
+                });
+
+            }
+
+        });
+        // library DOWN
+        layerDownContainer.on("mouseover", function(){
+            // create
+            if (controlsEntered===true) {
+                controlHoverElement.classed("hidden",false);
+                return;
+            }
+            if (controlHoverElement===undefined && controlsEntered===false) {
+                controlsEntered=true;
+                controlHoverElement=layerDownContainer.append('rect')
+                    .attr("x", 45)
+                    .attr("y", 150)
+                    .attr("width", 30)
+                    .attr("height", 30)
+                    .classed("hoverImage", true);
+                controlHoverElement.on("click",function(){
+                    // console.log("layer Down was clicked");
+                    library_Down();
+                });
+                controlHoverElement.on("mouseout", function(){
+                    controlHoverElement.classed("hidden",true);
+                    controlHoverElement.remove();
+                    controlHoverElement=undefined;
+                    controlsEntered=false;
+                });
+
+            }
+
+        });
+
+        // library ZoomIn
+        layerZoomInContainer.on("mouseover", function(){
+            // create
+            if (controlsEntered===true) {
+                controlHoverElement.classed("hidden",false);
+                return;
+            }
+            if (controlHoverElement===undefined && controlsEntered===false) {
+                controlsEntered=true;
+                controlHoverElement=layerZoomInContainer.append('rect')
+                    .attr("x", 80)
+                    .attr("y", 150)
+                    .attr("width", 30)
+                    .attr("height", 30)
+                    .classed("hoverImage", true);
+                controlHoverElement.on("click",function(){
+                    // console.log("layer ZoomIn  was clicked");
+                    library_ZoomIn();
+                });
+                controlHoverElement.on("mouseout", function(){
+                    controlHoverElement.classed("hidden",true);
+                    controlHoverElement.remove();
+                    controlHoverElement=undefined;
+                    controlsEntered=false;
+                });
+
+            }
+
+        });
+
+        // library Up
+        layerZoomOutContainer.on("mouseover", function(){
+            // create
+            if (controlsEntered===true) {
+                controlHoverElement.classed("hidden",false);
+                return;
+            }
+            if (controlHoverElement===undefined && controlsEntered===false) {
+                controlsEntered=true;
+                controlHoverElement=layerZoomOutContainer.append('rect')
+                    .attr("x", 115)
+                    .attr("y", 150)
+                    .attr("width", 30)
+                    .attr("height", 30)
+                    .classed("hoverImage", true);
+                controlHoverElement.on("click",function(){
+                    // console.log("layer ZoomOut was clicked");
+                    library_ZoomOut();
+                });
+                controlHoverElement.on("mouseout", function(){
+                    controlHoverElement.classed("hidden",true);
+                    controlHoverElement.remove();
+                    controlHoverElement=undefined;
+                    controlsEntered=false;
+                });
+
+            }
+
+        });
+    }
+
+    function library_Up(){
+        libraryStartIndex=libraryStartIndex+1;
+        if (libraryStartIndex>classNodes.length-1)
+            libraryStartIndex=classNodes.length-1;
+
+        controlHoverElement=undefined;
+        controlsEntered=false;
+        redrawContent();
+
+    }
+    function library_Down() {
+        libraryStartIndex=libraryStartIndex-1;
+        if (libraryStartIndex<0)
+            libraryStartIndex=0;
+
+        controlHoverElement=undefined;
+        controlsEntered=false;
+        redrawContent();
+
+    }
+    function library_ZoomOut(){
+		libraryZoomFactor=0.9*libraryZoomFactor;
+        if (libraryZoomFactor<0.1){
+            libraryZoomFactor=0.1;
+        }
+		controlHoverElement=undefined;
+        controlsEntered=false;
+		redrawContent();
+
+
+	}
+    function library_ZoomIn(){
+        libraryZoomFactor=1.1*libraryZoomFactor;
+        if (libraryZoomFactor>1.0){
+            libraryZoomFactor=1.0;
+        }
+        controlHoverElement=undefined;
+        controlsEntered=false;
+        redrawContent();
+
+    }
+
 
 	function redrawContent() {
 		if (!graphContainer) {
@@ -370,11 +590,6 @@ module.exports = function (graphContainerSelector) {
 
 		// Empty the graph container
 		graphContainer.selectAll("*").remove();
-
-
-		console.log("redrawing");
-
-		// create container for fixed nodes;
 
         nodeContainer = graphContainer.append("g").classed("nodeContainer", true);
         linkLayer = nodeContainer.append("g").classed("nodeContainer", true);
@@ -392,13 +607,24 @@ module.exports = function (graphContainerSelector) {
                 });
             //.call(dragBehaviour);
 			var index=0;
+			var tIndex=0;
+			// console.log("nuber of nodes="+fixed.length);
+
             fixed.each(function (node) {
-                node.x = 60;
-                node.y = 200 + index * 110;
-                node.drawNodeElement(d3.select(this));
-                node.updateRendering();
-                index++;
+                if (tIndex>=libraryStartIndex) {
+                    node.x = node.radius() + 10;
+                    // console.log("Library Zoom Factor" + libraryZoomFactor);
+                    node.y = (240 - (1.0 - libraryZoomFactor) * node.radius() + (index * libraryZoomFactor * 2 * (node.radius() + 10)));
+                    // console.log("Y POs" + node.y);
+                    node.zoomFactor(libraryZoomFactor);
+                    node.drawNodeElement(d3.select(this));
+                    node.updateScaleFactor();
+                    index++;
+                }
+                tIndex++;
             });
+            // add libraryControlElements
+			libraryControlElements();
         }
 
 
@@ -406,7 +632,6 @@ module.exports = function (graphContainerSelector) {
 			console.log("Nothing to render");
 			return;
 		}
-        // console.log("I want to render #nodes "+force.nodes());
         nodeElements = nodeContainer.selectAll(".node")
             .data(force.nodes()).enter()
             .append("g")
@@ -419,7 +644,6 @@ module.exports = function (graphContainerSelector) {
             node.drawNodeElement(d3.select(this));
         });
 
-        console.log("redrawing PORT ELEMENTS");
         for (var i=0;i<port_linkContainer.length;i++){
         	port_linkContainer[i].svgRoot(linkLayer);
         	port_linkContainer[i].drawLinkElements();

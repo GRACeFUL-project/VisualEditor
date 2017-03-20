@@ -50,7 +50,6 @@ module.exports = function (graph) {
         var tools=document.createElement('div');
 
 
-
         // Request Library
         var library_uploadForm=document.createElement('form');
         library_uploadForm.id="library_uploadJson-Form";
@@ -83,12 +82,6 @@ module.exports = function (graph) {
 
 
         // Send model to the system
-        // exportButton=document.createElement('a');
-        // exportButton.href="#";
-        // exportButton.download="";
-        // exportButton.innerHTML="Send Model";
-        // exportButton.id="exportButton";
-        // exportButton.setAttribute("class", "exportButton");
         var sendModelButtonContainer=document.createElement('div');
             sendModelButtonContainer.appendChild(document.createElement('br'));
         var sendModelButton=document.createElement('a');
@@ -102,54 +95,41 @@ module.exports = function (graph) {
         tools.appendChild(sendModelButtonContainer);
 
 
-        //
-        // var loaderPathContainer=document.createElement('div'),
-        //     exportButtonContainer=document.createElement('div');
-        //
-        // loaderPath=document.createElement('input');
-        // loaderPath.id="jsonFilePath";
-        // loaderPath.type="file";
-        // loaderPath.style.display="none";
-        // loaderPath.autocomplete="off";
-        // loaderPath.placeholder="load a json File";
-        // loaderPath.setAttribute("class", "inputPath");
-        //
-        //
-        // var followPath=document.createElement('input');
-        // followPath.id="followFilePath";
-        // followPath.type="file";
-        // followPath.style.display="none";
-        // followPath.autocomplete="off";
-        // followPath.placeholder="load a json File";
-        // followPath.setAttribute("class", "inputPath");
-        // var uploadFollow=document.createElement('button');
-        // uploadFollow.type="submit";
-        // uploadFollow.id="uploadFollow";
-        // uploadFollow.innerHTML="Get Follow";
-        // // set the parent hierarchy;
-        // // uploadForm.appendChild(uploadInput);
-        // // uploadForm.appendChild(uploadButton2);
-        // // uploadButton2.setAttribute("class", "inputUpLoader");
-        // // uploadButton2.disabled=true;
-        //
-        //
-        //
-        // exportButton=document.createElement('a');
-        // exportButton.href="#";
-        // exportButton.download="";
-        // exportButton.innerHTML="Send Model";
-        // exportButton.id="exportButton";
-        // exportButton.setAttribute("class", "exportButton");
-        //
-        // loaderPathContainer.appendChild(loaderPath);
-        // exportButtonContainer.appendChild(document.createElement('br'));
-        // exportButtonContainer.appendChild(exportButton);
-        //
+        // request solution
+        var solution_uploadForm=document.createElement('form');
+        solution_uploadForm.id="library_uploadJson-Form";
+        var solution_uploadInput=document.createElement('input');
+        solution_uploadInput.type="text";
+        solution_uploadInput.id="SOLUTION_JSON_INPUT";
+        solution_uploadInput.placeholder="Select Solution  JSON";
+        solution_uploadInput.setAttribute("class", "inputPath");
 
-        // tools.appendChild(loaderPathContainer);
-        // tools.appendChild(exportButtonContainer);
+        var hidden_solutionInput=document.createElement('input');
+        hidden_solutionInput.id="HIDDEN_SOLUTION_JSON_INPUT";
+        hidden_solutionInput.type="file";
+        hidden_solutionInput.style.display="none";
+        hidden_solutionInput.autocomplete="off";
+        hidden_solutionInput.placeholder="load a json File";
+        hidden_solutionInput.setAttribute("class", "inputPath");
+        hidden_solutionInput.style.display="none";
+
+        var requestSolutionButton=document.createElement('button');
+        requestSolutionButton.type="submit";
+        requestSolutionButton.id="requestSolutionButton";
+        requestSolutionButton.innerHTML="Get Solution";
+        requestSolutionButton.setAttribute("class", "inputUpLoader");
+        requestSolutionButton.disabled=true;
+        // set the parent hierarchy;
+        solution_uploadForm.appendChild(solution_uploadInput);
+        solution_uploadForm.appendChild(requestSolutionButton);
+        solution_uploadForm.appendChild(hidden_solutionInput);
+        tools.appendChild(document.createElement('br'));
+        tools.appendChild(solution_uploadForm);
 
 
+
+
+        // Meta info
 		var inputHeader= document.createElement('h2');
 		inputHeader.id="inputHeader";
 		inputHeader.innerHTML="Input Output";
@@ -158,6 +138,7 @@ module.exports = function (graph) {
 		inputOutput.node().appendChild(tools);
 
 
+		// element connections
         var loaderPathNode=d3.select("#HIDDEN_LIBRARY_JSON_INPUT");
         loaderPathNode.on("input",function(){
             selectedFiles = loaderPathNode.property("files");

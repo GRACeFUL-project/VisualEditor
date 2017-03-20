@@ -23,7 +23,6 @@
 module.exports = function (graph) {
     var parser={};
     var inputClasses=[];
-    var inputPorts=[];
     var nodeElement= require("./elements/nodeElement")();
     var portElement= require("./elements/portElement")();
     var TBOX;
@@ -92,8 +91,6 @@ module.exports = function (graph) {
                     portOBJ.elementType(portType);
                     portOBJ.label(portName);
 
-
-
                     var portCon  = ports[iC].connection;
                     if (portCon.length>0) {
                         // add a connection
@@ -106,11 +103,9 @@ module.exports = function (graph) {
                             portConnections.push(connectionDescription);
                         }
                     }
-
-                        // assign this port to the node;
+                    // assign this port to the node;
                     instanceNode.addInstancePort(portOBJ);
                 }
-
                 instanceNodes.push(instanceNode);
             }
         }
@@ -119,10 +114,10 @@ module.exports = function (graph) {
             highestId:highestID,
             connections:portConnections
         }
-
     };
 
     parser.parse=function(inputTxt){
+        inputClasses=[];
         console.log("parsing input txt");
         //1] read the txt as JSON;
         var jObj=JSON.parse(inputTxt);
@@ -146,18 +141,12 @@ module.exports = function (graph) {
 
         console.log("PARSING DATA");
 
-        // get tBox
-
         TBOX=jObj.library;
         // for number of objects in TBOX do parsing
         var nodeId=0;
-        var portId=0;
-
-        console.log("Number of NOdes="+TBOX.length);
         for (var iA=0;iA<TBOX.length;iA++){
             var libDisc=TBOX[iA];
             // get description of the library in terms of nodes and their interfaces
-
             // each object is here a node with its values;
                 var nodeName    = libDisc.name;
                 var imgURL      = libDisc.imgURL;
@@ -179,15 +168,13 @@ module.exports = function (graph) {
                 inputClasses.push(node);
 
                 var ports       = libDisc.interface;
-                console.log("ports: "+ports);
-
                 // create ports;
                 for (var iC=0;iC<ports.length;iC++) {
                     var portName = ports[iC].name;
                     var portType = ports[iC].type;
                     var portText = ports[iC].hoverText;
-                    var portImg = ports[iC].imgURL;
-                    var portRot = ports[iC].rotation;
+                    var portImg  = ports[iC].imgURL;
+                    var portRot  = ports[iC].rotation;
 
                     var portOBJ=new portElement(graph);
                     portOBJ.id(0);
@@ -199,12 +186,10 @@ module.exports = function (graph) {
                     // assign this port to the node;
                     node.addPortObject(portOBJ);
                 }
-                console.log( nodeId+" : "+ nodeName +" "+ imgURL+ " "+ hoverText);
+                // console.log( nodeId+" : "+ nodeName +" "+ imgURL+ " "+ hoverText);
             }
-
         return inputClasses;
     };
-
 
     return parser;
 };

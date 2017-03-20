@@ -188,6 +188,14 @@ module.exports = function (graph) {
 
         // create table entry
 
+        var updateAllButton=document.createElement('a');
+        updateAllButton.innerHTML="Update All Port Entries";
+        updateAllButton.id="updateAllButton2";
+        updateAllButton.setAttribute("class", "updateButtonDisabled");
+        updateAllButton.onclick=function(){updateAllEntries()};
+        editContainer.node().appendChild(updateAllButton);
+        editContainer.node().appendChild(document.createElement('br'));
+        editContainer.node().appendChild(document.createElement('br'));
 
         for (var i=0;i<ports.length;i++){
             var table= document.createElement('table');
@@ -258,9 +266,16 @@ module.exports = function (graph) {
 
             editContainer.node().appendChild(table);
             editContainer.node().appendChild(document.createElement('br'));
-		}
 
-        // add table
+
+
+        }
+
+
+        for (i=0;i<ports.length;i++){
+            var idString = "#PORT_HOVER_EDIT" + i;
+            d3.select(idString).on("keydown", userInputPort);
+        }
 	}
 
 	function removePort(sender){
@@ -313,6 +328,15 @@ module.exports = function (graph) {
         }
 	}
 
+    function userInputPort(){
+        var bt= d3.select("#updateAllButton2").node();
+        bt.setAttribute("class", "updateButton");
+        if (d3.event.keyCode === 13) {
+            updateAllEntries();
+
+        }
+    }
+
 	function removeNode(){
 		graph.removeNode(selectedNode);
 
@@ -340,11 +364,19 @@ module.exports = function (graph) {
 
             params[i].value=newValue;
         }
+        var ports=selectedNode.getPortObjs();
+        for (i=0;i<ports.length;i++) {
+            var portId = "PORT_HOVER_EDIT" + i;
+            var portHoverTxt = d3.select("#" + portId).node().value;
+            ports[i].hoverText(portHoverTxt);
+        }
 
         graph.update();
         selectedNode.setFocusedHighlight();
         var bt= d3.select("#updateAllButton").node();
         bt.setAttribute("class", "updateButtonDisabled");
+        var bt2= d3.select("#updateAllButton2").node();
+        bt2.setAttribute("class", "updateButtonDisabled");
 
 	}
 
