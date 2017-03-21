@@ -1,4 +1,8 @@
 module.exports = function (graph) {
+
+
+
+
     var metaInfo={};
     var infoContainer;
     var selectedFiles;
@@ -9,10 +13,40 @@ module.exports = function (graph) {
 	var allowExport=false;
     var loadedFileName;
 
+
     metaInfo.setup=function(){
 		var inputOutput=d3.select("#inputOutput");
         infoContainer=d3.select("#metaInfoObject");
         var tools=document.createElement('div');
+
+
+        var testLBt=document.createElement('button');
+        testLBt.type="submit";
+        testLBt.id="testLib";
+        testLBt.innerHTML="Get Library";
+        testLBt.setAttribute("class", "inputUpLoader");
+        testLBt.disabled=false;
+
+
+
+
+        tools.appendChild(testLBt);
+        testLBt.onclick=function(){
+            console.log("library sumit was pressed");
+            var libName="http://localhost:8081/library/crud";
+            // var xhr = new XMLHttpRequest();
+            // xhr.overrideMimeType("application/json");
+            // xhr.setRequestHeader("Access-Control-Allow-Methods", "GET");
+            // xhr.open("GET", libName, true);
+            // xhr.send();
+
+             d3.xhr(libName, "application/json",function (error, request) {
+                 if (request)
+
+                     graph.setLibraryText(request.responseText);
+
+            });
+        };
 
 
         // Request Library
@@ -138,6 +172,15 @@ module.exports = function (graph) {
         setupRequestLibraryButtons();
         setupRequestSolutionButton();
     };
+
+    //CORS middleware
+    var allowCrossDomain = function(req, res, next) {
+        res.header('Access-Control-Allow-Origin', 'example.com');
+        res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+        res.header('Access-Control-Allow-Headers', 'Content-Type');
+
+        next();
+    }
 
     function setupRequestSolutionButton(){
 

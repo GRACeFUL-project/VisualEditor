@@ -72,6 +72,7 @@ module.exports = function (graphContainerSelector) {
 
 	};
 
+
     graph.setJSON_SOLUTION_Text=function(text){
         console.log("got solution text");
         var solutions = inputParser.parseSolution(text);
@@ -179,6 +180,16 @@ module.exports = function (graphContainerSelector) {
 		return followNodeElement;
 	};
 	graph.getTestObject=function(){ return testObj;};
+
+    graph.setLibraryText=function(text){
+        graph.clearGraphData();
+        inputJsonText=text;
+
+        classNodes=inputParser.parseLib(inputJsonText);
+        redrawContent();
+
+    };
+
 	graph.setJSONInputText=function(txt){
 		graph.clearGraphData();
 		inputJsonText=txt;

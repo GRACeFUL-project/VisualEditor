@@ -152,6 +152,82 @@ module.exports = function (graph) {
         }
     };
 
+    parser.parseLib=function(text) {
+        inputClasses=[];
+        console.log("parsing input txt");
+        //1] read the txt as JSON;
+        var jObj=JSON.parse(text);
+        console.log("Okay");
+        header=jObj.header;
+
+        if (header){
+            // parse some meta Info:
+            var title=header.title;
+            var comment=header._comment;
+
+            if (title && comment) {
+                graph.options().metaInfo().title().innerHTML = "Title " + title;
+                graph.options().metaInfo().comment().innerHTML = "Comment " + comment;
+            }
+        }else{
+            graph.options().metaInfo().title().innerHTML = "Title : Not presented in file";
+            graph.options().metaInfo().comment().innerHTML = "Comment : Not presented in file";
+        }
+
+
+        console.log("PARSING DATA");
+
+        TBOX=jObj.library;
+        // for number of objects in TBOX do parsing
+        var nodeId=0;
+        for (var iA=0;iA<TBOX.length;iA++){
+            var libDisc=TBOX[iA];
+            // get description of the library in terms of nodes and their interfaces
+            // each object is here a node with its values;
+            var nodeName    = libDisc.name;
+            var imgURL      = libDisc.icon;
+            var hoverText   = libDisc.comment;
+            var params      = libDisc.parameters; // TODO: parse them and add them to the node object;
+
+            var node=new nodeElement(graph);
+            node.id(nodeId++);
+            node.imageURL(imgURL);
+            node.elementType("CLASS_NODE"); // setting the type of the node to be a class node
+            node.label(nodeName);
+            node.nameValue(nodeName);
+            node.hoverText(hoverText);
+
+            for (var pl=0;pl<params.length;pl++){
+                var par=params[pl];
+                node.addParameter(par);
+            }
+            inputClasses.push(node);
+
+            var ports       = libDisc.interface;
+            // create ports;
+            for (var iC=0;iC<ports.length;iC++) {
+                var portName = ports[iC].name;
+                var portType = ports[iC].type;
+                var portText = ports[iC].hoverText;
+                var portImg  = ports[iC].imgURL;
+                var portRot  = ports[iC].rotation;
+
+                var portOBJ=new portElement(graph);
+                portOBJ.id(0);
+                portOBJ.hoverText(portText);
+                portOBJ.imageURL(portImg);
+                portOBJ.name(portName);
+                portOBJ.rotationEnabled(portRot);
+                portOBJ.elementType(portType);
+                portOBJ.label(portName);
+                // assign this port to the node;
+                node.addPortObject(portOBJ);
+            }
+            // console.log( nodeId+" : "+ nodeName +" "+ imgURL+ " "+ hoverText);
+        }
+        return inputClasses;
+   };
+
     parser.parse=function(inputTxt){
         inputClasses=[];
         console.log("parsing input txt");
