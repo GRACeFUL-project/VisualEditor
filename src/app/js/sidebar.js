@@ -209,6 +209,22 @@ module.exports = function (graph) {
             nameEntry.appendChild(nameEntryRight);
             table.appendChild(nameEntry);
 
+
+            // try to add the ports value;
+            var portVal=ports[i].getValue();
+            if (portVal){
+                var valueEntry=document.createElement('tr');
+                var valueEntryLeft=document.createElement('td');
+                var valueEntryRight=document.createElement('td');
+
+                valueEntryLeft.innerHTML = "Value ";
+                valueEntryRight.innerHTML= portVal; // the given name in the library
+                valueEntry.appendChild(valueEntryLeft);
+                valueEntry.appendChild(valueEntryRight);
+                table.appendChild(valueEntry);
+            }
+
+
             var imgEntry=document.createElement('tr');
             var imgEntryLeft=document.createElement('td');
             var imgEntryRight=document.createElement('td');

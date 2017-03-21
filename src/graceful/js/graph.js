@@ -72,6 +72,65 @@ module.exports = function (graphContainerSelector) {
 
 	};
 
+    graph.setJSON_SOLUTION_Text=function(text){
+        console.log("got solution text");
+        var solutions = inputParser.parseSolution(text);
+        // show solotions;
+        console.log("-----------------solutions----------------------");
+        for (var x=0;x<solutions.length;x++) {
+            var nodeId=parseInt(solutions[x].nodeId);
+
+            var instanceId=-1;
+            // try to find corresponding Id;
+            for (var i=0;i<instance_container.length;i++) {
+                if (nodeId===instance_container[i].id()) {
+                    instanceId=i;
+                    console.log("Found Node : " + solutions[x].nodeId+" At instance With Id "+instanceId);
+                }
+            }
+            if (instanceId===-1){
+                console.log("could not Find Node with identity "+nodeId);
+                continue;
+            }
+
+            // get the portObj of this node
+            var ports=instance_container[instanceId].getPortObjs();
+
+            for (var y = 0; y < solutions[x].interfaceValues.length; y++){
+                var simpleObj = solutions[x].interfaceValues[y];
+                console.log("    InterFace Name " + simpleObj.name);
+                console.log("    InterFace Val  " + simpleObj.value);
+
+                var portId=parseInt(simpleObj.name);
+                if (portId || portId===0){
+                    console.log("Using Integer Id values! ");
+                    ports[portId].setValue(simpleObj.value);
+                }
+                else{
+                    console.log("Using Ports Name !, search for  "+simpleObj.name);
+                    // search for port
+                    for (var p=0;p<ports.length;p++){
+                        var port=ports[p];
+                        console.log("Test Name "+port.name());
+                        if (port.name()===simpleObj.name){
+                            console.log("Found Port with name"+port.name());
+                            port.setValue(simpleObj.value);
+                        }
+                    }
+                }
+
+
+
+            }
+            console.log("--------------------");
+        }
+
+        // reset selection
+        if (lastSelectedNode){
+            graph.options().sidebar().updateEditInfo(lastSelectedNode);
+        }
+    };
+
 
 
     graph.getOutputJSON=function(){

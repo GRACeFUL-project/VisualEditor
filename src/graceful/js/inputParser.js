@@ -36,6 +36,42 @@ module.exports = function (graph) {
         return TBOX;
     };
 
+
+    parser.parseSolution=function (text){
+        var jObj=JSON.parse(text);
+        var len= jObj.length;
+        console.log("Solution Length="+len);
+
+        var solutions=[];
+        for (var i=0;i<len;i++){
+            var tempObj=jObj[i];
+            var solutionOBJ={};
+            for (var name in tempObj){
+                solutionOBJ.nodeId=name;
+                solutionOBJ.interfaceValues=[];
+                var interfaceValues=tempObj[name];
+                for (var j=0;j<interfaceValues.length;j++) {
+                    var interFace=interfaceValues[j];
+                    for (var interfaceName in interFace){
+                        // console.log("InterfaceName "+interfaceName);
+                        // console.log("Value "+interFace[interfaceName]);
+                        // // create simple obj for this
+                        var simpleObj={};
+                        simpleObj.name=interfaceName;
+                        simpleObj.value=interFace[interfaceName];
+                        solutionOBJ.interfaceValues.push(simpleObj);
+                    }
+                }
+
+            }
+            solutions.push(solutionOBJ);
+        }
+
+
+
+        return solutions;
+    };
+
     parser.parseABOX=function(inputTxt){
 
         console.log("PARSING ABOX");
@@ -180,6 +216,7 @@ module.exports = function (graph) {
                     portOBJ.id(0);
                     portOBJ.hoverText(portText);
                     portOBJ.imageURL(portImg);
+                    portOBJ.name(portName);
                     portOBJ.rotationEnabled(portRot);
                     portOBJ.elementType(portType);
                     portOBJ.label(portName);

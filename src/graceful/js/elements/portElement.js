@@ -34,6 +34,7 @@ module.exports = function () {
             portType,
             focused,
             mouseEntered,
+            value,
             label;
 
         var connectedPorts=[];
@@ -45,6 +46,12 @@ module.exports = function () {
             connectedPorts=[];
         };
 
+        this.setValue=function(val){
+            value=val;
+        };
+        this.getValue=function(){
+            return value;
+        };
 
         this.clearPortConnection=function(){
             graph.removeLinksBetweenPorts(that,connectedPorts[0]);
@@ -306,6 +313,7 @@ module.exports = function () {
 
         this.deepCopy=function(other){
           that.radius(other.radius());
+          that.name(other.name());
           that.imageURL(other.imageURL());
           that.hoverText(other.hoverText());
           that.elementType(other.elementType());

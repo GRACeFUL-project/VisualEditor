@@ -2,47 +2,12 @@ module.exports = function (graph) {
     var metaInfo={};
     var infoContainer;
     var selectedFiles;
+    var selectedSolutionFiles;
     // search for better way , scope things into objects or smth
     var title;
     var comment;
 	var allowExport=false;
     var loadedFileName;
-
-
-
-
-	function setupUploadButton() {
-		var input = d3.select("#file-converter-input"),
-			inputLabel = d3.select("#file-converter-label"),
-			uploadButton = d3.select("#file-converter-button");
-
-		input.on("change", function () {
-			var selectedFiles = input.property("files");
-			if (selectedFiles.length <= 0) {
-				inputLabel.text("Select ontology file");
-				uploadButton.property("disabled", true);
-			} else {
-				inputLabel.text(selectedFiles[0].name);
-				uploadButton.property("disabled", false);
-
-				//keepOntologySelectionOpenShortly();
-			}
-		});
-
-		uploadButton.on("click", function () {
-			var selectedFile = input.property("files")[0];
-			if (!selectedFile) {
-				return false;
-			}
-			//var newHashParameter = "file=" + selectedFile.name;
-			// Trigger the reupload manually, because the iri is not changing
-			// if (location.hash === "#" + newHashParameter) {
-			// 	loadOntologyFromFile();
-			// } else {
-			// 	location.hash = newHashParameter;
-			// }
-		});
-	}
 
     metaInfo.setup=function(){
 		var inputOutput=d3.select("#inputOutput");
@@ -144,8 +109,14 @@ module.exports = function (graph) {
             selectedFiles = loaderPathNode.property("files");
         });
 
-        var sendModelButton=d3.select("#sendModelButton");
-        sendModelButton.on("click",writeJSON);
+        var loaderSolutionPathNode=d3.select("#HIDDEN_SOLUTION_JSON_INPUT");
+        loaderSolutionPathNode.on("input",function(){
+            selectedSolutionFiles = loaderSolutionPathNode.property("files");
+        });
+
+
+        var sendModelButton2=d3.select("#sendModelButton");
+        sendModelButton2.on("click",writeJSON);
 
 
         var header= document.createElement('h2');
@@ -165,7 +136,46 @@ module.exports = function (graph) {
 
 		// setup button connections;
         setupRequestLibraryButtons();
+        setupRequestSolutionButton();
     };
+
+    function setupRequestSolutionButton(){
+
+        var le=d3.select("#SOLUTION_JSON_INPUT");
+        le.on("click",function(){
+            console.log("le clicked");
+            var hiddenBt=document.getElementById("HIDDEN_SOLUTION_JSON_INPUT");
+            hiddenBt.click();
+        });
+
+        var solutionLoaderPathNode=d3.select("#HIDDEN_SOLUTION_JSON_INPUT");
+        solutionLoaderPathNode.on("change",function(){
+            selectedSolutionFiles= solutionLoaderPathNode.property("files");
+            if (selectedSolutionFiles.length===0)
+                return;
+            var le=document.getElementById("SOLUTION_JSON_INPUT");
+            le.value=selectedSolutionFiles[0].name;
+            var bt=document.getElementById("requestSolutionButton");
+            bt.disabled=false;
+        });
+        // connect upload button
+        var upload=d3.select("#requestSolutionButton");
+        upload.on("click",function(){
+            selectedSolutionFiles = solutionLoaderPathNode.property("files");
+            if (selectedFiles.length===0)
+                return;
+            var file=selectedSolutionFiles[0];
+            var reader = new FileReader();
+            reader.readAsText(file);
+            reader.onload = function () {
+                graph.setJSON_SOLUTION_Text(reader.result);
+            };
+            d3.event.preventDefault();
+            return false;
+        });
+
+
+    }
 
 	function setupRequestLibraryButtons(){
 		console.log("Setting up");
