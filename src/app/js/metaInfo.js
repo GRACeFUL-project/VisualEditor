@@ -25,7 +25,9 @@ module.exports = function (graph) {
         testLBt.id="testLib";
         testLBt.innerHTML="Get Library";
         testLBt.setAttribute("class", "inputUpLoader");
-        testLBt.disabled=false;
+        testLBt.disabled=true;
+
+
 
 
 
@@ -47,6 +49,53 @@ module.exports = function (graph) {
 
             });
         };
+
+        // create send model button
+        var sendMBt=document.createElement('button');
+        sendMBt.type="submit";
+        sendMBt.id="testLib";
+        sendMBt.innerHTML="Send Model";
+        sendMBt.setAttribute("class", "inputUpLoader");
+        sendMBt.disabled=true;
+        tools.appendChild(sendMBt);
+
+        sendMBt.onclick=function(){
+            console.log("model  submit was pressed");
+            // get the model
+            var modelObj=  graph.getOutputJSON();
+            var modelText = JSON.stringify(modelObj, null, '  ');
+            var libName="http://localhost:8081/submit";
+            //
+            // d3.text(libName)
+            //      .header("Content-Type", "application/json")
+            //      .post(modelText, function(error, text) { console.log(text); });
+
+            var xhr = new XMLHttpRequest();
+            xhr.onload = function () {
+
+                if (xhr.status === 200) {
+                    console.log("Okay ---------------------------------------------------------");
+                    console.log(xhr.responseText);
+
+                }
+
+            };
+
+
+            xhr.open("POST", libName, true);
+            xhr.setRequestHeader('Content-type', 'application/json');
+            //
+             xhr.send(modelText);
+
+
+            // d3.xhr(libName, "application/json",function (error, request) {
+            //     if (request)
+            //         console.log(request.responseText);
+            // });
+        };
+
+
+
 
 
         // Request Library
@@ -173,14 +222,7 @@ module.exports = function (graph) {
         setupRequestSolutionButton();
     };
 
-    //CORS middleware
-    var allowCrossDomain = function(req, res, next) {
-        res.header('Access-Control-Allow-Origin', 'example.com');
-        res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-        res.header('Access-Control-Allow-Headers', 'Content-Type');
 
-        next();
-    }
 
     function setupRequestSolutionButton(){
 
