@@ -14,11 +14,120 @@ module.exports = function (graph) {
     var loadedFileName;
 
 
+    function createLinkSlider(container){
+            // default init
+        console.log("craeting slider");
+        var min,max,val,step;
+            if (min===undefined) min=50;
+            if (max===undefined) max=500;
+            if (val===undefined) val=100;
+            if (step===undefined) step=50;
+
+            var sliderContainer,
+                sliderValueLabel;
+
+            // create the slider
+
+
+        console.log("craeting 2slider");
+            var sliderC=document.createElement('div');
+            sliderC.class="slideOption";
+            sliderC.id="sliderID";
+            container.appendChild(sliderC);
+
+
+
+
+            var sliderX=d3.select('#sliderID');
+            sliderX.append("div")
+                .classed("distanceSliderContainer", true);
+        console.log("craeti3ng slider");
+            var slider = sliderX.append("input")
+                .attr("id", identifier + "DistanceSlider")
+                .attr("type", "range")
+                .attr("min", min)
+                .attr("max", max)
+                .attr("value", val)
+                .attr("step", step);
+
+        sliderX.append("label")
+                .classed("description", true)
+                .attr("for", identifier + "DistanceSlider")
+                .text(text);
+
+            sliderValueLabel = sliderX.append("label")
+                .classed("value", true)
+                .attr("for", identifier + "DistanceSlider")
+                .text(slider.attr("value"));
+
+            // Store slider for easier resetting
+            // sliderTexts.push(sliderValueLabel)
+            // slider.on("input", function () {
+            //     var val= slider.property("value");
+            //     console.log("Slider value chaged: "+val);
+            //     sliderValueLabel.text(val);
+            //     onChangeFunc(val);
+            //
+            //     if (updateLevel===1) {
+            //         graph.updateStyle();
+            //     }
+            //     if (updateLevel===2){
+            //         graph.redraw();
+            //     }
+            //
+            //     if (updateLevel===3 ){
+            //         graph.update();
+            //         graph.updateStyle();
+            //     }
+
+
+            // });
+
+        //     // add wheel event to the slider
+        //     slider.on("wheel",function(){
+        //         var wheelEvent=d3.event;
+        //         var offset;
+        //         if (wheelEvent.deltaY<0) offset=1;
+        //         if (wheelEvent.deltaY>0) offset=-1;
+        //         var oldVal=parseInt(slider.property("value"));
+        //         var newSliderValue=oldVal+offset*step;
+        //         if (newSliderValue!==oldVal){
+        //             slider.property("value",newSliderValue);
+        //             slider.on("input")(); // << set text and update the graphStyles
+        //         }
+        //     });
+        //     sliders.push(slider)
+        // }
+    }
+
     metaInfo.setup=function(){
 		var inputOutput=d3.select("#inputOutput");
         infoContainer=d3.select("#metaInfoObject");
         var tools=document.createElement('div');
 
+
+        var pauseBt=document.createElement('a');
+        pauseBt.type="submit";
+        pauseBt.href="#";
+        pauseBt.download="";
+        pauseBt.innerHTML="Pause";
+        pauseBt.id="PauseButton";
+        pauseBt.setAttribute("class", "exportButtonDisabled");
+
+
+        var sliderC=document.createElement('div');
+        sliderC.class="slideOption";
+        sliderC.innerHTML="";
+        sliderC.id="sliderID";
+        tools.appendChild(sliderC);
+        tools.appendChild(document.createElement('br'));
+        tools.appendChild(pauseBt);
+        tools.appendChild(document.createElement('br'));
+        tools.appendChild(document.createElement('br'));
+
+
+
+        //  createLinkSlider(inputOutput);
 
         var testLBt=document.createElement('button');
         testLBt.type="submit";
@@ -217,7 +326,53 @@ module.exports = function (graph) {
         infoContainer.node().appendChild(title);
         infoContainer.node().appendChild(comment);
 
-		// setup button connections;
+
+        var sliderX=d3.select("#sliderID");
+        console.log("sliderX"+sliderX);
+        sliderX.append("div")
+            .classed("distanceSliderContainer", true);
+        console.log("craeti3ng slider");
+        var slider = sliderX.append("input")
+            .attr("id", "DistanceSlider")
+            .attr("type", "range")
+            .attr("min", 100)
+            .attr("max", 1000)
+            .attr("value", 400)
+            .attr("step", 100);
+
+        sliderX.append("label")
+            .classed("description", true)
+            .attr("for", "DistanceSlider")
+            .text("Distance: ");
+
+        var sliderValueLabel = sliderX.append("label")
+            .classed("value", true)
+            .attr("for", "DistanceSlider")
+            .text(slider.attr("value"));
+
+
+        slider.on("input", function () {
+            var val = slider.property("value");
+            sliderValueLabel.text(val);
+            graph.updateLinkDistance(val);
+        });
+
+
+
+        var pBt=d3.select("#PauseButton");
+
+        pBt.on('click',function(){
+            var val=graph.paused();
+            if (val===true) {
+                pauseBt.innerHTML = "Pause";
+                graph.updatePauseValue(!graph.paused());
+            }else {
+                pauseBt.innerHTML = "Play";
+                graph.updatePauseValue(!graph.paused());
+                }
+            });
+
+        // setup button connections;
         setupRequestLibraryButtons();
         setupRequestSolutionButton();
     };

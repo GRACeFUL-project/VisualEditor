@@ -20,7 +20,7 @@ module.exports = function (graphContainerSelector) {
 		nodeElements,
 		testObj,
         fixedNodeContainer,
-
+        linkDist=400,
 	// Graph behaviour
 		force,
 		dragBehaviour,
@@ -131,6 +131,7 @@ module.exports = function (graphContainerSelector) {
             graph.options().sidebar().updateEditInfo(lastSelectedNode);
         }
     };
+
 
 
 
@@ -725,6 +726,20 @@ module.exports = function (graphContainerSelector) {
 	/**
 	 * Applies all options that don't change the graph data.
 	 */
+
+    graph.updateLinkDistance=function(value){
+        linkDist=value;
+        refreshGraphStyle();
+        redrawContent();
+    };
+
+    graph.updatePauseValue=function(value){
+        graph.paused(value);
+        refreshGraphStyle();
+        redrawContent();
+    };
+
+
 	function refreshGraphStyle() {
 		 zoom = zoom.scaleExtent([options.minMagnification(), options.maxMagnification()]);
 		 if (nodeContainer) {
@@ -737,7 +752,7 @@ module.exports = function (graphContainerSelector) {
         });
         force.gravity(0.025);
         force.linkStrength(1); // Flexibility of links
-		force.linkDistance(400);
+		force.linkDistance(linkDist);
      	force.nodes().forEach(function (n) {
 		 	n.frozen(paused);
 		 });

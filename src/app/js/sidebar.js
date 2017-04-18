@@ -35,18 +35,13 @@ module.exports = function (graph) {
 		collapseContainers(d3.selectAll(".accordion-trigger:not(.accordion-trigger-active) + div"));
 
 		triggers.on("click", function () {
-			var selectedTrigger = d3.select(this),
-				activeTriggers = d3.selectAll(".accordion-trigger-active");
-			console.log("accordion triggered");
+			var selectedTrigger = d3.select(this);
+
 			if (selectedTrigger.classed("accordion-trigger-active")) {
-				// Collapse the active (which is also the selected) trigger
 				collapseContainers(d3.select(selectedTrigger.node().nextElementSibling));
 				selectedTrigger.classed("accordion-trigger-active", false);
 			} else {
-				// Collapse the other trigger ...
-				collapseContainers(d3.selectAll(".accordion-trigger-active + div"));
-				activeTriggers.classed("accordion-trigger-active", false);
-				// ... and expand the selected one
+
 				expandContainers(d3.select(selectedTrigger.node().nextElementSibling));
 				selectedTrigger.classed("accordion-trigger-active", true);
 			}
