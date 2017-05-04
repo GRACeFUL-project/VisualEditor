@@ -996,7 +996,9 @@ module.exports = function (graphContainerSelector) {
         function getScreenCoords(x, y, translate, scale) {
         var xn=(x-translate[0])/scale;
         var yn=(y-translate[1])/scale;
-
+        console.log(" On Screen"+x+","+y);
+        console.log(" Translate and scale"+translate+","+scale);
+        console.log(" Result "+xn+","+yn);
         return {x: xn, y: yn};
     }
 

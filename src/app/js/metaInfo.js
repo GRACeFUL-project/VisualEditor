@@ -134,7 +134,7 @@ module.exports = function (graph) {
         testLBt.id="testLib";
         testLBt.innerHTML="Get Library";
         testLBt.setAttribute("class", "inputUpLoader");
-        testLBt.disabled=true;
+        testLBt.disabled=false;
 
 
 
@@ -165,7 +165,7 @@ module.exports = function (graph) {
         sendMBt.id="testLib";
         sendMBt.innerHTML="Send Model";
         sendMBt.setAttribute("class", "inputUpLoader");
-        sendMBt.disabled=true;
+        sendMBt.disabled=false;
         tools.appendChild(sendMBt);
 
         sendMBt.onclick=function(){
